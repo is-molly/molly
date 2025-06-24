@@ -19,6 +19,12 @@ export default navbar([
           { text: "Lua基础", icon: "/assets/icon/lua.svg", link: "/BackEnd/Lua/LuaBase/" },
         ],
       },
+      {
+        text: "Common",
+        children: [
+          { text: "gRPC", icon: "/assets/icon/grpc.svg", link: "/BackEnd/Common/GRPC/" },
+        ],
+      },
     ],
   },
   {

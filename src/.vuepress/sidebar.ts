@@ -4,6 +4,7 @@ export default sidebar({
   "/BackEnd/Java/JVM": "structure",
   "/BackEnd/Java/Concurrent": "structure",
   "/BackEnd/Lua/LuaBase": "structure",
+  "/BackEnd/Common/GRPC": "structure",
   "/FrontEnd/Framework/Vue2": "structure",
   "/FrontEnd/Engineering/PackageManager": "structure",
   "/DevOps/Cloud/Docker": "structure",
