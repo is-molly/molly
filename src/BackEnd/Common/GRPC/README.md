@@ -21,5 +21,5 @@ category:
 7. [gRPC与Springboot整合](gRPC与Springboot整合.md)
 8. [gRPC拦截器](gRPC拦截器.md)
 9. [客户端重试机制](客户端重试机制.md)
-10. [NameResolver与负载均衡](NameResolver与负载均衡.md)\
+10. [NameResolver与负载均衡](NameResolver与负载均衡.md)
 11. [gRPC与Springboot高级整合](gRPC与Springboot高级整合.md)
