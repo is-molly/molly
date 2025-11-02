@@ -7,7 +7,7 @@ export default sidebar({
   "/BackEnd/Common/GRPC": "structure",
   "/FrontEnd/Framework/Vue2": "structure",
   "/FrontEnd/Engineering/PackageManager": "structure",
-  "/DevOps/Cloud/Docker": "structure",
+  "/DevOps/Cloud/Container": "structure",
   "/DevOps/Cloud/Kubernetes": "structure",
   "/Base/DataStructure": "structure",
   "/Base/Algorithm": "structure",
@@ -19,5 +19,6 @@ export default sidebar({
   "/DevOps/Linux/Bash/": "structure",
   "/DevOps/Linux/Ansible/": "structure",
   "/DevOps/Linux/BindDNS/": "structure",
+  "/DevOps/Linux/SSH/": "structure",
   "/DevOps/Middleware/MySQL/": "structure",
 });

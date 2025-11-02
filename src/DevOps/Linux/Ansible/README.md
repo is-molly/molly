@@ -1,7 +1,7 @@
 ---
 collapsible: true
 index: true
-order: number
+order: 0
 date: 2025-02-13
 category: 
   - 运维

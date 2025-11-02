@@ -56,6 +56,7 @@ export default navbar([
           { text: "Bash编程", icon: "/assets/icon/bash.svg", link: "/DevOps/Linux/Bash/" },
           { text: "Ansible", icon: "/assets/icon/ansible.svg", link: "/DevOps/Linux/Ansible/" },
           { text: "Bind DNS", icon: "/assets/icon/bind-dns.svg", link: "/DevOps/Linux/BindDNS/" },
+          { text: "SSH", icon: "/assets/icon/ssh.svg", link: "/DevOps/Linux/SSH/" },
         ],
       },
       {
@@ -73,7 +74,7 @@ export default navbar([
       {
         text: "云原生",
         children: [
-          { text: "Docker", icon: "/assets/icon/docker.svg", link: "/DevOps/Cloud/Docker/" },
+          { text: "Container", icon: "/assets/icon/container.svg", link: "/DevOps/Cloud/Container/" },
           { text: "Kubernetes", icon: "/assets/icon/k8s.svg", link: "/DevOps/Cloud/Kubernetes/" },
         ],
       },

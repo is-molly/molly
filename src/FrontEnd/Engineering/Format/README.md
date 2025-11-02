@@ -1,7 +1,7 @@
 ---
 collapsible: true
 index: true
-order: number
+order: 0
 date: 2024-06-23
 category: 
   - 前端

@@ -12,5 +12,8 @@ dist.zip
 # idea
 .idea
 
+# obsidian
+.obsidian
+
 # lock file
 *-lock.yaml

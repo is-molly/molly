@@ -1,10 +1,18 @@
 ---
-order: 1
+order: 8
 date: 2024-04-07
 ---
 # 排错必备-Kubectl命令详解
 
 [参考文档](https://kubernetes.io/zh-cn/docs/reference/kubectl/)
+
+## explain
+
+最重要的命令，通过 `kubectl explain xx` 来学习 xx资源有哪些可配置的属性
+
+```shell
+kubectl explain deployment
+```
 
 ## k8s命令自动补全
 

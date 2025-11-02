@@ -1,5 +1,5 @@
 ---
-order: 2
+order: 3
 date: 2024-04-07
 ---
 # K8S 高可用集群安装
@@ -144,7 +144,6 @@ Node*
 
 - 硬件配置：>= 2GB RAM，>= 2 CPU ，>= 30GB 磁盘
 - 集群中所有机器之间网络互通。所有机器使用静态Ip，不能使用 DHCP
-
 - 操作系统 CentOS7.x-86_x64，系统升级到 7.9
 - 设置yum源与安装基础软件
 - 关闭防火墙、安全组件、swap 分区、dnsmasq、NetworkManager
@@ -390,7 +389,7 @@ EOF
 #    - 对应状态错误日志查看方式如下表
 ```
 
-![](./images/pod-stattus.png)
+![](./images/image-20251103021233770.png)
 
 ## 集群搭建(kubeadm方式)
 

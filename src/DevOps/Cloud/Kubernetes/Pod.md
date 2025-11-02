@@ -2,27 +2,26 @@
 order: 4
 date: 2024-04-07
 ---
-# Pod 基础
+# Pod
 
 ## 什么是Pod
 
 Pod可以简单地理解为是一组、一个或多个容器构成，每个Pod还包含一个Pause容器。
-
+ 
 Pause容器是Pod的父容器，它主要负责僵尸进程的回收管理，同时通过Pause容器可以使同一个Pod里面的不同容器共享存储、网络、PID、IPC等，容器之间可以使用 `localhost:port` 相互访问，可以使用 volume 等实现数据共享。
 
 根据 Docker 的构造，Pod可被建模为一组具有共享命令空间、卷、IP地址和Port端口的容器。
 
-![](./images/image-20220908215536485.png)
+![](./images/image-20251103020842216.png)
 
-## 为什么要引入Pod
+## Pod设计思想
 
-- 强依赖的服务需要部署在一起（如nginx与php）
-- 多个服务需要协同工作
-- 兼容其他CRI标准的运行时
+- 多容器协作
+- 强依赖服务
+- 简化应用的生命周期管理
+- 兼容多种CRI运行时
 
 ## Pod 基本操作
-
-### 创建一个Pod
 
 ```shell
 # 1. 定义一个 Pod
@@ -76,7 +75,7 @@ kubectl api-resources
 kubectl api-resources | grep pod
 ```
 
-###  更改Pod启动命令和参数
+##  更改Pod启动命令和参数
 
 ```shell
 # 新增启动命令与参数
@@ -96,13 +95,11 @@ spec:
 EOF
 ```
 
-###  Pod状态及Pod故障排查
+##  Pod状态及Pod故障排查
 
-pod状态表：
+![](./images/image-20251103021233770.png)
 
-![](./images/pod-stattus.png)
-
-###  Pod镜像拉取策略
+##  Pod镜像拉取策略
 
 通过 `spec.containers[].imagePullPolicy `参数可以指定镜像的拉取策略，目前支持的策略如下:
 
@@ -112,7 +109,7 @@ pod状态表：
 | Never        | 不管是否存在都不会拉取                                       |
 | ifNotPresent | 镜像不存在时拉取镜像，如果 tag 为非 latest，且 imagePullPolicy 未配置，默认为 ifNotPresent |
 
-###  Pod重启策略
+##  Pod重启策略
 
 可以使用 `spec.restartPolicy `指定容器的重启策略：
 
@@ -122,7 +119,7 @@ pod状态表：
 | OnFailure | 容器以不为0的状态码中止，自动重启该容器 |
 | Never     | 无论何种状态，都不会重启                |
 
-###  Pod的三种探针
+##  Pod的三种探针
 
 | 种类           | 说明                                                         |
 | -------------- | ------------------------------------------------------------ |
@@ -130,7 +127,7 @@ pod状态表：
 | livenessProbe  | 用于探测容器是否在运行，如果探测失败kubelet 会 “杀死” 容器并根据重启策略进行相应的处理。如果未指定该探针将默认为 Success。会循环探测！ |
 | readinessProbe | 1. 一般用于探测容器内的程序是否健康，即判断容器是否为就绪（Ready）状态。如果是则可以处理请求，反之 Endpoints Controller 将从所有的 Service 的 Endpoints 中删除此容器所在 Pod 的 IP 地址。如果未指定该探针将默认为 Success。会循环探测！<br>2. 检查失败会切断该容器对应Pod的Service流量！<br>3. 不会重启Pod |
 
-### Pod探针的实现方式
+### 探针的实现方式
 
 | 实现方式         | 说明                                                         |
 | ---------------- | ------------------------------------------------------------ |
@@ -261,7 +258,7 @@ spec:
     - containerPort: 80
 ```
 
-###0 preStop 和 postStart
+### preStop 和 postStart
 
 是否用了合理的探针，就能保证 Pod 启动与运行万无一失呢？肯定不是！
 
@@ -318,7 +315,7 @@ spec:
   restartPolicy: Never
 ```
 
-###1 gRPC探测
+### gRPC探测
 
 > gRPC 探针 在 K8S 1.24 版本后默认开启
 
