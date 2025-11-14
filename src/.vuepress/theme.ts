@@ -13,7 +13,7 @@ export default hopeTheme({
 
   logo: "/assets/icon/book.svg",
 
-  repo: "polaris/molly-wiki",
+  repo: "polaris/molly",
 
   docsDir: "src",
 
