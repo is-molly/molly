@@ -4,9 +4,19 @@ date: 2024-04-07
 ---
 # 排错必备-Kubectl命令详解
 
+## 常用命令
+
 [参考文档](https://kubernetes.io/zh-cn/docs/reference/kubectl/)
 
-## explain
+###   api-resource
+
+查看kube有哪些资源类型和相关元数据信息
+
+```shell
+kubectl api-resource
+```
+
+### explain
 
 最重要的命令，通过 `kubectl explain xx` 来学习 xx资源有哪些可配置的属性
 
@@ -14,7 +24,7 @@ date: 2024-04-07
 kubectl explain deployment
 ```
 
-## k8s命令自动补全
+### k8s命令自动补全
 
 ```shell
 # 安装 bash-completion 包
@@ -28,7 +38,7 @@ source <(kubectl completion bash)
 echo "source <(kubectl completion bash)" >> ~/.bashrc 
 ```
 
-## 最常用命令
+### 最常用命令
 
 ```shell
 # 1.查看 Pod
@@ -109,7 +119,7 @@ kubectl get node --show-labels
 kubectl get pod <POD名称> -n <NAMESPACE名称> -o yaml | kubectl replace --force -f -
 ```
 
-## 创建相关命令
+### 创建相关命令
 
 ```shell
 kubectl apply -f ./my-manifest.yaml                            # 创建资源
@@ -163,7 +173,7 @@ data:
 EOF
 ```
 
-## 查看和查找资源
+### 查看和查找资源
 
 ```shell
 # get 命令的基本输出
@@ -227,7 +237,7 @@ kubectl get events --sort-by=.metadata.creationTimestamp
 kubectl diff -f ./my-manifest.yaml
 ```
 
-## 更新资源
+### 更新资源
 
 ```shell
 # 滚动更新 "frontend" Deployment 的 "www" 容器镜像
@@ -270,7 +280,7 @@ kubectl annotate pods my-pod icon-url=http://goo.gl/XXBTWq
 kubectl autoscale deployment foo --min=2 --max=10                
 ```
 
-## 部分更新资源
+### 部分更新资源
 
 ```shell
 # 部分更新某节点
@@ -289,7 +299,7 @@ kubectl patch deployment valid-deployment  --type json   -p='[{"op": "remove", "
 kubectl patch sa default --type='json' -p='[{"op": "add", "path": "/secrets/1", "value": {"name": "whatever" } }]'
 ```
 
-## 删除资源
+### 删除资源
 
 ```shell
 # 删除在 pod.yaml 中指定的类型和名称的 Pod
@@ -314,7 +324,7 @@ kubectl -n my-ns delete po,svc --all
 kubectl get pods  -n mynamespace --no-headers=true | awk '/pattern1|pattern2/{print $1}' | xargs  kubectl delete -n mynamespace pod
 ```
 
-## Pod常用操作
+### Pod常用操作
 
 ```shell
 # 获取 pod 日志（标准输出）
@@ -369,7 +379,7 @@ kubectl exec my-pod -c my-container -- ls /
 kubectl top pod POD_NAME --containers
 ```
 
-## 节点操作
+### 节点操作
 
 ```shell
 # 标记 my-node 节点为不可调度
@@ -397,7 +407,7 @@ kubectl cluster-info dump --output-directory=/path/to/cluster-state
 kubectl taint nodes foo dedicated=special-user:NoSchedule
 ```
 
-## 格式化输出
+### 格式化输出
 
 要以特定格式将详细信息输出到终端窗口，可以将 -o 或 --output 参数添加到支持的 kubectl 命令。
 
@@ -424,3 +434,11 @@ kubectl get pods -A -o=custom-columns='DATA:spec.containers[?(@.image!="k8s.gcr.
 # 输出 metadata 下面的所有字段，无论 Pod 名字为何
 kubectl get pods -A -o=custom-columns='DATA:metadata.*'
 ```
+
+## 奇难杂症
+
+### Deployment
+
+#### 未配置requests报错资源不足
+
+当我们在Deployment只配置了Limits没有配置Requests时，K8s的默认机制是在创建Pod时会自动加上与Limits相同的Requests配置，所以如果资源不够时可以给一个很小的Requests值！
