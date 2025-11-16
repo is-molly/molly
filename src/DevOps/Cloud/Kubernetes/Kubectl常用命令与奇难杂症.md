@@ -1,5 +1,5 @@
 ---
-order: 8
+order: 99
 date: 2024-04-07
 ---
 # 排错必备-Kubectl命令详解
