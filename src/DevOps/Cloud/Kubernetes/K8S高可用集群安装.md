@@ -1038,7 +1038,7 @@ spec:
         - --requestheader-group-headers=X-Remote-Group
         - --requestheader-extra-headers-prefix=X-Remote-Extra-
         # 修改为国内镜像
-        image: registry.cn-beijing.aliyuncs.com/dotbalo/metrics-server:0.5.0
+        image: registry.cn-beijing.aliyuncs.com/monap/metrics-server:0.5.0
         imagePullPolicy: IfNotPresent
         livenessProbe:
           failureThreshold: 3

@@ -3,7 +3,7 @@ order: 3
 date: 2025-11-02
 ---
 
-#  Namespace
+#  资源隔离-Namespace
 
 ### 概念
 

@@ -2,7 +2,7 @@
 order: 4
 date: 2024-04-07
 ---
-# Pod
+# 容器组-Pod
 
 ## 什么是Pod
 
@@ -319,7 +319,7 @@ spec:
   containers:
   - name: nginx
     # 由于 nginx:1.15.12 镜像没有 pgrep 命令，所以这里换了一个镜像（一般带alpine的镜像都有 pgrep 命令）
-    image: registry.cn-beijing.aliyuncs.com/dotbalo/nginx:1.15.12-alpine 
+    image: registry.cn-beijing.aliyuncs.com/monap/nginx:1.15.12-alpine 
     imagePullPolicy: IfNotPresent
     command:
     - sh
