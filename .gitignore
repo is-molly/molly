@@ -17,3 +17,5 @@ dist.zip
 
 # lock file
 *-lock.yaml
+
+*.tar.gz
