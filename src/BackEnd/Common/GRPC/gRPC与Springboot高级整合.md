@@ -60,11 +60,11 @@ public class CustomBootInterceptor implements ClientInterceptor {
     <version>3.1.2</version>
  </dependency>
 
- <!--健康检查  http协议 -->
- <dependency>
-      <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-actuator</artifactId>
-  </dependency>
+<!--健康检查  http协议 -->
+<dependency>
+  <groupId>org.springframework.boot</groupId>
+  <artifactId>spring-boot-actuator</artifactId>
+</dependency>
 ```
 
 #### application.yml
