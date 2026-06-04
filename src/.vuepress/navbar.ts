@@ -3,6 +3,18 @@ import { navbar } from "vuepress-theme-hope";
 export default navbar([
   '/',
   {
+    text: "人工智能",
+    icon: "ri:ai",
+    children: [
+      {
+        text: "Agent",
+        children: [
+          { text: "OpenClaw", icon: "/assets/icon/openclaw.svg", link: "/AI/Agent/OpenClaw/" },
+        ],
+      }
+    ],
+  },
+  {
     text: "后端",
     icon: "ri:java-line",
     children: [

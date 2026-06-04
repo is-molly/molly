@@ -1,6 +1,7 @@
 import { sidebar } from "vuepress-theme-hope";
 
 export default sidebar({
+  "/AI/Agent/OpenClaw": "structure",
   "/BackEnd/Java/JVM": "structure",
   "/BackEnd/Java/Concurrent": "structure",
   "/BackEnd/Lua/LuaBase": "structure",
