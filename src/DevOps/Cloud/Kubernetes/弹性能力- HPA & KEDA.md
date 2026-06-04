@@ -626,6 +626,117 @@ kubectl get po
 kubectl delete -f rabbitmq-consumer.yaml -f rabbitmq-so.yaml -f rabbitTriggerAuth.yaml -f rabbitmq-publish-job.yaml
 ```
 
-#### 基于MySQL数据库扩缩容
-
 #### ScaledJob实现任务处理
+
+KEDA 可以使用 ScaledJob 实现单次或者临时的任务处理，用来处理一些数据，比如图片、 视频等。
+
+假设有一个需求，需要从 Redis 队列获取数据，然后进行处理，就可以使用 ScaledJob 实现。 首先创建一个 Redis 实例：
+
+```shell
+helm repo add bitnami https://charts.bitnami.com/bitnami
+
+helm upgrade --install redis bitnami/redis --set global.imageRegistry=docker.kubeasy.com --set global.redis.password=dukuan --set architecture=standalone --set master.persistence.enabled=false --version 20.1.6
+```
+
+创建 TriggerAuthentication
+
+```yaml
+apiVersion: v1
+kind: Secret
+metadata:
+  name: redis-so-secret
+type: Opaque
+stringData:
+  redis_username: ""
+  redis_password: "dukuan"
+---
+apiVersion: keda.sh/v1alpha1
+kind: TriggerAuthentication
+metadata:
+  name: redis-so-ta
+spec:
+  secretTargetRef:
+    - parameter: username
+      name: redis-so-secret
+      key: redis_username
+    - parameter: password
+      name: redis-so-secret
+      key: redis_password
+```
+
+测试写入与读取数据：
+
+```shell
+$ kubectl exec -ti redis-master-0 -- bash 
+I have no name!@redis-master-0:/$ redis-cli -h redis-master -a dukuan 
+redis-master:6379> LPUSH test_list "t1" "t2" "t3" 
+(integer) 3
+redis-master:6379> LRANGE test_list 0 2 
+1) "t3" 
+2) "t2"
+3) "t1"
+redis-master:6379> RPOP test_list
+"t1" 
+redis-master:6379> LPOP test_list
+"t3"
+```
+
+创建 ScaledJob 监听数据
+
+```yaml
+apiVersion: keda.sh/v1alpha1
+kind: ScaledJob
+metadata:
+  name: redis-queue-scaledjob
+spec:
+  jobTargetRef:
+    parallelism: 1 # 每次只启动一个 Job 实例
+    completions: 1 # 每个 Job 只需要完成一次
+    backoffLimit: 4 # 最大重试次数
+    template:
+      spec:
+        containers:
+          - name: redis-queue-consumer
+            image: registry.cn-beijing.aliyuncs.com/dotbalo/redis:process
+  pollingInterval: 30 # 每 30 秒检查一次队列中的消息数量
+  successfulJobsHistoryLimit: 3 # 保留最近 3 个成功的 Job
+  failedJobsHistoryLimit: 3 # 保留最近 3 个失败的 Job
+  maxReplicaCount: 5 # 最多同时运行 5 个 Job
+  triggers:
+    - type: redis
+      metadata:
+        address: redis-master.default.svc.cluster.local:6379
+        listName: test_list
+        listLength: "5"
+      authenticationRef:
+        name: redis-so-ta
+```
+
+写入测试数据
+
+```shell
+redis-master:6379> LPUSH test_list "t1" "t2" "t3" 
+(integer) 3 
+redis-master:6379> LPUSH test_list "t1" "t2" "t3" 
+(integer) 6 
+redis-master:6379> LPUSH test_list "t1" "t2" "t3"
+(integer) 9 
+```
+
+查看创建的 Job
+
+```shell
+$ kubectl get job 
+NAME                        STATUS   COMPLETIONS DURATION  AGE 
+redis-queue-scaledjob-9smnb Complete    1/1        19s     2m5s 
+redis-queue-scaledjob-qftb2 Complete.   1/1        17s     2m5s
+```
+
+查看pod
+
+```shell
+$ kubectl get po | grep redis
+redis-master-0                    1/1 Running   0 27m
+redis-queue-scaledjob-9smnb-8mjz8 0/1 Completed 0 2m2s
+redis-queue-scaledjob-qftb2-vv45q 0/1 Completed 0 2m2s
+```
