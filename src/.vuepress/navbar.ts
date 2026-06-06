@@ -26,6 +26,15 @@ export default navbar([
         ],
       },
       {
+        text: "Golang",
+        children: [
+          { text: "Base", icon: "/assets/icon/golang.svg", link: "/BackEnd/Golang/Base/" },
+          { text: "Web", icon: "/assets/icon/golang.svg", link: "/BackEnd/Golang/Web/" },
+          { text: "Database", icon: "/assets/icon/golang.svg", link: "/BackEnd/Golang/Database/" },
+          { text: "微服务", icon: "/assets/icon/golang.svg", link: "/BackEnd/Golang/Microservice/" },
+        ],
+      },
+      {
         text: "Lua",
         children: [
           { text: "Lua基础", icon: "/assets/icon/lua.svg", link: "/BackEnd/Lua/LuaBase/" },
