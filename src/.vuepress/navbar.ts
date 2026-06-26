@@ -10,6 +10,7 @@ export default navbar([
         text: "Agent",
         children: [
           { text: "OpenClaw", icon: "/assets/icon/openclaw.svg", link: "/AI/Agent/OpenClaw/" },
+          { text: "ClaudeCode", icon: "/assets/icon/claudecode.svg", link: "/AI/Agent/ClaudeCode/" },
         ],
       }
     ],
