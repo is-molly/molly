@@ -78,6 +78,7 @@ export default navbar([
           { text: "Ansible", icon: "/assets/icon/ansible.svg", link: "/DevOps/Linux/Ansible/" },
           { text: "Bind DNS", icon: "/assets/icon/bind-dns.svg", link: "/DevOps/Linux/BindDNS/" },
           { text: "SSH", icon: "/assets/icon/ssh.svg", link: "/DevOps/Linux/SSH/" },
+          { text: "Tool", icon: "/assets/icon/tools.svg", link: "/DevOps/Linux/Tool/" },
         ],
       },
       {

@@ -25,5 +25,6 @@ export default sidebar({
   "/DevOps/Linux/Ansible/": "structure",
   "/DevOps/Linux/BindDNS/": "structure",
   "/DevOps/Linux/SSH/": "structure",
+  "/DevOps/Linux/Tool/": "structure",
   "/DevOps/Middleware/MySQL/": "structure",
 });
