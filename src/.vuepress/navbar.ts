@@ -11,7 +11,18 @@ export default navbar([
         children: [
           { text: "OpenClaw", icon: "/assets/icon/openclaw.svg", link: "/AI/Agent/OpenClaw/" },
           { text: "ClaudeCode", icon: "/assets/icon/claudecode.svg", link: "/AI/Agent/ClaudeCode/" },
+        ],
+      },
+      {
+        text: "Skills",
+        children: [
           { text: "Skills", icon: "/assets/icon/skills.svg", link: "/AI/Skills/" },
+        ],
+      },
+      {
+        text: "CLI&MCP",
+        children: [
+          { text: "CLI&MCP", icon: "/assets/icon/mcp.svg", link: "/AI/CLI-MCP/" },
         ],
       }
     ],

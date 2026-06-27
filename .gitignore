@@ -19,3 +19,6 @@ dist.zip
 *-lock.yaml
 
 *.tar.gz
+
+# local upstream research clones (not committed)
+.research/

@@ -4,6 +4,7 @@ export default sidebar({
   "/AI/Agent/OpenClaw": "structure",
   "/AI/Agent/ClaudeCode": "structure",
   "/AI/Skills": "structure",
+  "/AI/CLI-MCP": "structure",
   "/BackEnd/Java/JVM": "structure",
   "/BackEnd/Java/Concurrent": "structure",
   "/BackEnd/Golang/Base": "structure",
