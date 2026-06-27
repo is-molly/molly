@@ -1,157 +1,169 @@
 ---
 order: 18
-date: 2026-06-26
+date: 2026-06-27
 ---
 
 # Subagents
 
-## 什么是 Subagent
+Subagent（子代理）是**预配置 AI 角色**——独立 context、专用 system prompt、可选工具限制。Claude 通过 **Agent 工具**或 **@-mention** 委派任务。
 
-Subagent（子代理）是**预配置的 AI 角色**，Claude Code 可以将任务委派给它执行。每个 Subagent 有独立的上下文窗口、特定的系统提示词和受限的工具集。
-
-当 Claude 遇到匹配 Subagent 专长领域的任务时，可以自动将任务委派，Subagent 独立工作并返回结果。
-
-### 核心优势
-
-| 优势 | 说明 |
-|------|------|
-| **上下文隔离** | Subagent 在自己的上下文中运行，不污染主会话 |
-| **专业专长** | 用详细指令针对特定领域微调，指定任务成功率更高 |
-| **可复用** | 创建后可跨项目使用，团队可共享 |
-| **灵活的权限** | 不同 Subagent 可以有不同的工具访问级别 |
+与 **background 整个会话**、**Agent Teams 多实例协作**不同：Subagent 在**单会话内**运行，结果汇总回主对话。并行多终端见 worktree + `claude agents`（第 17、21 章）。
 
 ## 内置 Subagent
 
-Claude Code 自带的内置子代理：
+| Subagent | 用途 | 工具 | 备注 |
+|----------|------|------|------|
+| **Explore** | 快速只读搜索 | Read, Grep, Glob, LS | **跳过** CLAUDE.md、git status |
+| **Plan** | Plan Mode 下调研 | Read, Grep, Glob, Bash | 同上；thoroughness: quick/medium/very thorough |
+| **General-purpose** | 复杂多步 | 全部 | 默认执行型 |
+| **fork** | 继承完整对话的旁路任务 | 全部 | v2.1.161+；见下文 |
 
-| Subagent | 用途 | 可用工具 |
-|----------|------|----------|
-| **Explore** | 快速、只读的代码库搜索和分析 | Read、Grep、Glob、LS |
-| **Plan** | 在 Plan Mode 中研究代码库，不编辑代码 | Read、Grep、Glob、Bash |
-| **General-purpose** | 复杂多步任务 | 全部工具 |
-
-Plan Subagent 仅在 Plan Mode 下使用。在普通执行模式下，Claude 使用 General-purpose 或你自定义的 Subagent。
+Explore/Plan 是 **one-shot**，无 agent ID，**不可 resume**；需持续对话用 custom 或 general-purpose。
 
 ## 自定义 Subagent
 
-### 存放位置
+### 存放位置与优先级
 
-| 类型 | 位置 | 作用域 |
+| 类型 | 路径 | 优先级 |
 |------|------|--------|
-| **Project** | `.claude/agents/` | 当前项目（优先级最高） |
-| **User** | `~/.claude/agents/` | 所有项目 |
-| **Plugin** | `<plugin>/agents/` | Plugin 启用的地方 |
-| **CLI 动态** | `--agents` 标志 | 当前会话 |
+| Project | `.claude/agents/` | 最高 |
+| User | `~/.claude/agents/` | 中 |
+| Plugin | `<plugin>/agents/` | 命名空间 `plugin:agent` |
+| CLI | `--agents '{...}'` | 仅当前会话 |
+| Managed | policy 部署 | 随策略 |
 
-### 文件格式
+**Project > CLI > User**（同名时）。
+
+### 文件示例
 
 ```markdown
 ---
 name: code-reviewer
-description: Expert code review specialist. Proactively reviews code for quality, security, and maintainability. Use immediately after writing or modifying code.
+description: Expert code reviewer. Use PROACTIVELY after code changes.
 tools: Read, Grep, Glob, Bash
 model: inherit
+permissionMode: default
+isolation: worktree
+background: false
+maxTurns: 30
+effort: high
+color: blue
 ---
 
-You are a senior code reviewer ensuring high standards of code quality and security.
-
-When invoked:
-1. Run git diff to see recent changes
-2. Focus on modified files
-3. Begin review immediately
-
-Review checklist:
-- Code is simple and readable
-- Functions and variables are well-named
-- No duplicated code
-- Proper error handling
-- No exposed secrets or API keys
-- Input validation implemented
-
-Provide feedback organized by priority:
-- Critical issues (must fix)
-- Warnings (should fix)
-- Suggestions (consider improving)
+You are a senior code reviewer...
 ```
 
 ### Frontmatter 字段
 
-| 字段 | 必填 | 说明 |
-|------|------|------|
-| `name` | 是 | 唯一标识符（小写字母和连字符） |
-| `description` | 是 | 自然语言描述用途和调用时机 |
-| `tools` | 否 | 逗号分隔的工具列表。不填继承主会话全部工具 |
-| `model` | 否 | 模型：`sonnet`/`opus`/`haiku`/`inherit`。不填默认 `sonnet` |
-| `isolation` | 否 | `worktree` 让 Subagent 在隔离 worktree 中运行 |
+| 字段 | 说明 |
+|------|------|
+| `name` | 唯一 ID（小写+连字符） |
+| `description` | 触发描述；加 PROACTIVELY/MUST BE USED 提高自动委派 |
+| `tools` / `disallowedTools` | 工具白名单/黑名单 |
+| `model` | `sonnet`/`opus`/`haiku`/`inherit`/`fable` |
+| `permissionMode` | 覆盖 subagent 权限模式（含 `plan`） |
+| `isolation` | `worktree` → 临时 git worktree |
+| `background` | `true` → 总是后台运行 |
+| `maxTurns` | 最大轮次 |
+| `effort` | 含 `max` |
+| `mcpServers` | 限制 MCP（Teammate 模式不完全应用） |
+| `skills` | 预加载 skills |
+| `hooks` | subagent 生命周期 hooks |
+| `memory` | subagent 级 memory 配置 |
+| `color` | UI 标识色 |
 
-### 通过 `/agents` 管理
+Subagent **默认 cwd = 主会话 cwd**；`cd` 不跨 Bash 调用持久。`isolation: worktree` 给独立仓库副本。
+
+### `/agents` 与 CLI
 
 ```
-/agents
+/agents          # 查看、创建、编辑、删除
 ```
-
-交互式界面支持：
-- 查看所有可用 Subagent（内置、用户级、项目级）
-- 创建新 Subagent（向导模式）
-- 编辑工具权限
-- 删除自定义 Subagent
-
-### 通过 CLI 动态定义
 
 ```shell
-claude --agents '{
-  "code-reviewer": {
-    "description": "Expert code reviewer. Use proactively after code changes.",
-    "prompt": "You are a senior code reviewer. Focus on code quality, security, and best practices.",
-    "tools": ["Read", "Grep", "Glob", "Bash"],
-    "model": "sonnet"
-  }
-}'
+claude --agents '{"reviewer":{"description":"...","prompt":"...","tools":["Read","Grep"]}}'
 ```
 
-优先级：Project > CLI > User。
+主会话设 `"agent": "code-reviewer"` 可让整个会话以该 subagent 身份运行。
 
 ## 使用方式
 
 ### 自动委派
 
-Claude 会根据 Subagent 的 `description` 自动判断何时使用。在 `description` 中加入 "use PROACTIVELY" 或 "MUST BE USED" 增强自动触发的倾向。
+Claude 匹配 `description` 自动调用 Agent 工具。
 
 ### 显式调用
 
 ```
-Use the code-reviewer subagent to check my recent changes
-Have the test-runner subagent fix failing tests
+Use the code-reviewer subagent on my last commit
+@code-reviewer review src/auth/
 ```
 
-## 何时使用 Subagent
+### 禁止某 subagent
 
-### 适合用 Subagent 的场景
-
-| 场景 | 信号 | 好处 |
-|------|------|------|
-| **研究密集型** | 需要读几十个文件来理解 | 主会话保持整洁 |
-| **多个独立任务** | 子任务之间无依赖 | 并行执行 |
-| **需要新视角** | 需要不带偏见的审查 | 干净上下文，客观反馈 |
-| **验证后提交** | 提交前需要第二意见 | 捕捉熟悉度掩盖的问题 |
-| **流水线** | 有明确的分阶段（设计→实现→测试） | 每个阶段独立专注 |
-
-### 不适合用 Subagent 的场景
-
-- 任务微小（读一两个文件即可解决）
-- 所有子任务强依赖（需要串行）
-- Subagent 的描述不够精确，Claude 无法判断何时调用
-
-## 隔离模式
-
-```yaml
-isolation: worktree
+```json
+{ "permissions": { "deny": ["Agent(Explore)"] } }
 ```
 
-Subagent 在独立的 git worktree 中运行，适合大规模批量修改。
+或 `claude --disallowedTools "Agent(Explore)"`。
 
-## Subagent 的深度限制
+## Foreground vs Background
 
-整个 Subagent 调用链的最大深度为 **5 层**，防止无限递归嵌套。
+| 模式 | 行为 |
+|------|------|
+| **Foreground** | 阻塞等待结果 |
+| **Background** | 并发执行；v2.1.186+ 权限弹窗** surfaced 到主会话** |
 
-> **资料来源**：[Claude Code 官方文档 - Subagents](https://code.claude.com/docs/en/sub-agents)
+- 说「run in background」或 **`Ctrl+B`** 后台化运行中 subagent/Bash
+- `CLAUDE_CODE_DISABLE_BACKGROUND_TASKS=1` 禁用
+- `CLAUDE_CODE_FORK_SUBAGENT=1` 时**所有** spawn 走 background
+
+## Fork Subagent（`/fork` 同类）
+
+**Fork** 继承**完整对话历史**（system prompt、tools、model、messages），适合旁路任务无需重述背景：
+
+- 通过 Agent 工具请求 `fork` 类型
+- 工具调用不进主 transcript，仅**最终结果**返回
+- Fork **不能再 fork**；其他 subagent 仍计 depth
+- 可 `isolation: worktree` 隔离文件写入
+
+会话内 **`/fork <directive>`**（v2.1.161+）是面向用户的 fork 入口。
+
+## 调用深度与 Resume
+
+- 最大深度 **5 层**（固定，不可配置）
+- 第 5 层 subagent **无 Agent 工具**，不能再 spawn
+- v2.1.187+：background subagent depth **spawn 时固定**，resume 不会变浅
+- 完成后的 subagent 返回 **agent ID**，可 resume 继续（Explore/Plan 除外）
+- `SendMessage` 到已停止 subagent 会**自动 background resume**
+
+## 加载到 Subagent 的上下文
+
+| 内容 | 是否加载 |
+|------|----------|
+| CLAUDE.md、rules、managed policy | ✓（Explore/Plan **除外**） |
+| Git status 快照 | ✓（非 git 或 `includeGitInstructions: false` 时除外；Explore/Plan 除外） |
+| MCP servers | ✓（来自 project/user settings） |
+| 主会话对话历史 | ✗（fork 除外） |
+| Spawn prompt | ✓ |
+
+Explore/Plan 省略 memory 为提速；若规则必须生效（如「忽略 vendor/」），在委派 prompt 里**重申**。
+
+## Plan Mode 与 Subagent
+
+Plan Mode 下 Claude 委派 **Plan** subagent 调研；主会话保持只读。Teammate 可设 plan approval（第 19 章）。
+
+## 何时用 / 不用
+
+| 适合 | 不适合 |
+|------|--------|
+| 读大量文件、多模块探索 | 读 1–2 文件即可 |
+| 独立并行子任务 | 强依赖串行上下文 |
+| 客观 code review | description 模糊无法触发 |
+| 流水线：设计→实现→测试 | — |
+
+## Plugin Subagent
+
+启用 plugin 后 typeahead 显示 `my-plugin:security-reviewer`；子目录 agent 可多级命名 `my-plugin:review:security`。
+
+> **资料来源**：[Subagents](https://code.claude.com/docs/en/sub-agents)、[Commands - /fork](https://code.claude.com/docs/en/commands)

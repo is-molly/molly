@@ -43,12 +43,20 @@ export CLAUDE_CODE_DISABLE_AUTO_MEMORY=1
 /memory
 ```
 
+### Auto Memory 文件结构
+
+每个项目在 `~/.claude/projects/<project>/memory/` 下有自动记忆目录（同 git 仓库的 worktree 共享）。核心文件 **`MEMORY.md`** 在每次会话启动时加载：**前 200 行或 25KB（取先到者）**。超出部分不自动加载——Claude 会把详细笔记拆到主题文件。
+
+Claude 在会话中读写 memory 时，界面会显示 "Writing memory" / "Recalled memory"。Auto memory **仅本机**，不跨机器/云端同步。
+
 ### 自定义存储位置
 
 ```json
-// 仅 user 和 managed 设置可配此项（project 和 local 不行，出于安全考虑）
+// 仅 user 和 managed 设置可配（project/local 不可，出于安全）
 { "autoMemoryDirectory": "~/my-memory-dir" }
 ```
+
+路径须为绝对路径或以 `~/` 开头。在 project settings 中设置需先接受 workspace trust 对话框。
 
 ## 上下文管理
 
@@ -80,13 +88,13 @@ Opus 4.7、Opus 4.6、Sonnet 4.6 支持 1M token 上下文（详见第 4 章）�
 
 显示当前会话的上下文使用情况，帮助你了解剩余空间。
 
-### `/cost` —— 查看费用
+### `/cost` —— 查看费用（API 用户）
 
 ```
 /cost
 ```
 
-显示当前会话的 Token 消耗和费用估算。
+显示当前会话 Token 消耗和费用估算。**Pro/Max 订阅用户不适用**——订阅费用不按会话 Token 计费。
 
 ## Auto-Dream（自动梦境）
 

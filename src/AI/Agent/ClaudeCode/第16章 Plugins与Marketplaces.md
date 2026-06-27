@@ -1,93 +1,93 @@
 ---
 order: 16
-date: 2026-06-26
+date: 2026-06-27
 ---
 
 # Plugins 与 Marketplaces
 
-## 什么是 Plugin
+Plugin 是 Skills、Hooks、MCP、Subagents、Commands、LSP、Monitors 的**打包分发单位**——适合团队共享、版本化、市场分发。
 
-Plugin 是 Claude Code 扩展的**打包分发单位**——一个 Plugin 目录可以包含 Skills、Hooks、MCP Server 配置、Subagents、Slash Commands 和 LSP 定义，打包成一个可安装的单元。
+## Plugin vs 独立 `.claude/` 配置
 
-Plugin 的价值在于**分发**——团队中某个工程师写好的 Hook、Skill、MCP 配置，可以通过 Plugin 一键安装到其他成员的 Claude Code 中，版本化管理，更新时自动获取。
+| 方式 | Skill 命令 | 适用 |
+|------|-----------|------|
+| 独立 `.claude/skills/` | `/deploy` | 个人实验、单项目、短命令名 |
+| **Plugin** | `/my-plugin:deploy` | 团队共享、多项目复用、市场发布、版本更新 |
+
+迭代流程：先在 `.claude/` 试跑 → 成熟后打包为 Plugin。
 
 ## Plugin 结构
 
 ```
 my-plugin/
 ├── .claude-plugin/
-│   └── plugin.json        # 清单文件（必须）
-├── skills/                 # Skills 目录
-│   └── my-skill/
-│       └── SKILL.md
-├── hooks/
-│   └── hooks.json         # Hook 配置
-├── agents/                 # Subagents 定义
-├── commands/               # Slash Commands
-├── .mcp.json              # MCP Server 配置
-├── .lsp.json              # LSP Server 配置
-├── monitors/
-│   └── monitors.json      # 后台监控器
-└── settings.json          # 默认设置
+│   └── plugin.json        # 清单（必须在此目录）
+├── skills/
+│   └── my-skill/SKILL.md
+├── agents/                 # Subagents
+├── hooks/hooks.json
+├── commands/               # 旧式 slash commands
+├── .mcp.json
+├── .lsp.json
+├── monitors/monitors.json  # 后台监控器
+└── settings.json           # 插件默认 settings
 ```
 
-**关键规则**：只有 `plugin.json` 放在 `.claude-plugin/` 目录内，其余所有内容放在 Plugin 根目录。
+**规则**：仅 `plugin.json` 在 `.claude-plugin/` 内；其余内容在 Plugin **根目录**。
 
-### 最小 plugin.json
+### plugin.json 要点
 
 ```json
 {
   "name": "my-first-plugin",
-  "description": "A greeting plugin to learn the basics",
+  "description": "Team coding standards and review hooks",
   "version": "1.0.0",
-  "author": {
-    "name": "Your Name"
-  }
+  "author": { "name": "Your Team" },
+  "repository": "https://github.com/org/my-first-plugin"
 }
 ```
 
-`name` 会成为 Plugin 中所有 Skill 的命名空间前缀：`plugin-name:skill-name`。`version` 可选，但设置后用户只在你更新版本号时收到更新。
+| 字段 | 说明 |
+|------|------|
+| `name` | 命名空间前缀 → `/name:skill-name` |
+| `version` |  bump 后用户才收到更新；git 分发无 version 时用 commit SHA |
+| `homepage` / `license` | 可选，展示于市场 |
+
+## 本地开发与测试
+
+```shell
+claude --plugin-dir ./my-first-plugin
+```
+
+修改 Plugin 文件后，Skills 支持**热加载**（无需重启会话）。
 
 ## 市场（Marketplaces）
 
 ### 官方市场
 
-Claude Code 自带 `claude-plugins-official` 官方市场。运行 `/plugin` 在 **Discover** 标签页浏览可用插件。
-
-安装官方市场插件：
-
 ```
-/plugin install <name>@claude-plugins-official
-```
+/plugin
+# Discover 标签浏览
 
-例如：
-
-```
 /plugin install github@claude-plugins-official
+/plugin install security-guidance@claude-plugins-official
 ```
 
-### 社区市场
-
-社区维护了大量市场，2500+ 注册市场涵盖各种场景。通过 GitHub 仓库添加：
+### 添加社区市场
 
 ```
 /plugin marketplace add anthropics/claude-plugins-community
-```
-
-然后从中安装：
-
-```
 /plugin install <name>@claude-community
 ```
 
-### 企业团队市场
+社区 **2500+** 注册市场；Managed 可用 `blockedMarketplaces` 在下载前拦截，`strictKnownMarketplaces` 限制白名单。
 
-企业可以创建内部市场供团队成员共享 Plugin：
+### 企业内市场
 
 ```json
 {
   "extraKnownMarketplaces": {
-    "my-org-marketplace": {
+    "my-org": {
       "source": "github",
       "repo": "my-org/claude-plugins"
     }
@@ -95,24 +95,54 @@ Claude Code 自带 `claude-plugins-official` 官方市场。运行 `/plugin` 在
 }
 ```
 
-管理员可通过 `blockedMarketplaces` 和 `strictKnownMarketplaces` 控制市场来源。
+Managed `enabledPlugins` 可**强制启用**指定插件（用户无法禁用）。
+
+### 其他安装源
+
+官方支持从 **GitHub 仓库、.zip、URL** 安装市场/插件（v2.1.19+ 等版本逐步增强）。详见 [Discover plugins](https://code.claude.com/docs/en/discover-plugins)。
 
 ## Plugin 命令
 
 | 命令 | 功能 |
 |------|------|
-| `/plugin` | 打开 Plugin 交互界面 |
-| `/plugin install <name>` | 安装 Plugin |
-| `/plugin update <name>` | 更新 Plugin |
-| `/plugin marketplace add <repo>` | 添加市场 |
-| `/plugin marketplace update <name>` | 刷新市场 |
+| `/plugin` | 管理界面：Discover / Installed / Marketplaces |
+| `/plugin install <name>@<market>` | 安装 |
+| `/plugin update <name>` | 更新 |
+| `/plugin enable` / `disable` | 启用/禁用 |
+| `/plugin marketplace add <repo\|url>` | 添加市场 |
+| `/plugin marketplace update <name>` | 刷新市场索引 |
 
-## Plugin 安全
+CLI：`claude plugin` 子命令（见 CLI reference）。
 
-- Plugin 未经 Anthropic 审核（官方市场除外）
-- 安装 Plugin 意味着信任其作者
-- Plugin 使用 `plugin-name:skill-name` 命名空间避免冲突
-- 组织可通过 Managed Settings 控制 Plugin 安装权限
-- 被封禁的市场来源在下载前即被检查，不会触碰文件系统
+## 与 Skills / Subagents 的命名
 
-> **资料来源**：[Claude Code 官方文档 - Plugins](https://code.claude.com/docs/en/plugins)、[Discover Plugins](https://code.claude.com/docs/en/discover-plugins)
+- Plugin Skill：`plugin-name:skill-name`（不会与 project/personal skill 冲突）
+- Plugin Subagent：typeahead 显示 `my-plugin:code-reviewer`
+- 同名冲突时：**Enterprise > Personal > Project > Plugin**（Plugin 有独立 namespace）
+
+## 安全与治理
+
+| 风险 | 缓解 |
+|------|------|
+| 未审核社区插件 | 仅安装信任来源；官方市场由 Anthropic 维护 |
+| 恶意 hooks/MCP | Managed：`allowManagedHooksOnly`、`allowedMcpServers` |
+| 市场投毒 | `blockedMarketplaces` 下载前拦截 |
+| Shell in Skill | Managed：`disableSkillShellExecution` |
+
+安装 Plugin = 信任作者能在你的 Claude Code 环境执行 hooks、读配置、注册 MCP。
+
+## 发布自己的 Plugin
+
+1. 完善 `plugin.json` 与 README
+2. 推送到 GitHub 仓库
+3. 用户 ` /plugin marketplace add your-org/repo`
+4. 更新时 bump `version`
+
+可选提交到 [claude-plugins-community](https://github.com/anthropics/claude-plugins-community) 或自建市场索引 JSON。
+
+## 与 Routines / 云端的区别
+
+- **本地 CLI Plugin**：存在本机，Routines 默认看不到 CLI `claude mcp add` 的 server
+- 要在 Routines 用 MCP：在 claude.ai **Connectors** 添加，或仓库提交 `.mcp.json`
+
+> **资料来源**：[Plugins](https://code.claude.com/docs/en/plugins)、[Discover plugins](https://code.claude.com/docs/en/discover-plugins)、[Plugins reference](https://code.claude.com/docs/en/plugins-reference)

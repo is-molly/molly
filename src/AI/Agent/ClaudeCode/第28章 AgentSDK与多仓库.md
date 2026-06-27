@@ -47,11 +47,23 @@ claude -c -p "检查上次修改是否有类型错误"
 
 ## `--bare` 模式
 
-在仓库的**任意子目录**中运行 Claude Code，而不需要是 Git 仓库根目录：
+**极简模式**：跳过 hooks、skills、plugins、MCP、auto memory、CLAUDE.md 自动发现等，脚本调用启动更快。Claude 仍可使用 Bash、读文件、编辑文件。设置 `CLAUDE_CODE_SIMPLE`。
 
 ```shell
-claude --bare
+claude --bare -p "query"
 ```
+
+与 `--safe-mode` 不同：`--safe-mode` 禁用自定义配置用于排查，但保留认证、内置工具与权限；`--bare` 是轻量脚本模式。
+
+## 会话迁移与后台（CLI）
+
+| 标志 | 说明 |
+|------|------|
+| `--remote "task"` | 在 claude.ai 创建新的**云端 Web 会话** |
+| `--teleport` / `--tp` | 将 Web 会话拉回到本地终端 |
+| `--remote-control` / `--rc` | 启动带 Remote Control 的交互会话 |
+| `--bg` / `--background` | 以 background agent 启动并立即返回 |
+| `--from-pr <n>` | 恢复与 PR 关联的会话 |
 
 ## `--add-dir` 多仓库工作
 
@@ -65,10 +77,10 @@ claude --add-dir ../libs ../shared-utils
 
 ## `--channels` MCP 通道
 
-启用 Channels（将外部事件推送到 Claude Code 会话）：
+启用 Channels（将外部事件推送到 Claude Code 会话）。**Research preview**；需 claude.ai 认证，语法示例：
 
 ```shell
-claude --channels
+claude --channels plugin:my-plugin@marketplace-name
 ```
 
 ## 系统提示词控制

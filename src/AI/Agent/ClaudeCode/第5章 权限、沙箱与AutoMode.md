@@ -20,22 +20,21 @@ Claude Code 提供了六种权限模式，影响 Claude 在执行操作前是否
 | `bypassPermissions` | 所有操作（受保护目录除外） | 仅限隔离容器和虚拟机 |
 | `dontAsk` | 仅预先批准的工具 | 非交互式环境（CI 等） |
 
-### 受保护目录
+### 受保护路径
 
-无论何种模式，对以下目录的写入**不会**自动批准：
-- `.git/`
-- `.vscode/`
-- `.idea/`
-- `.husky/`
-- `.claude/`（但 `.claude/commands/`、`.claude/agents/`、`.claude/skills/` 除外）
+无论何种模式（`bypassPermissions` 除外），对以下路径的**写入**不会自动批准，防止损坏仓库状态与 Claude Code 自身配置：
 
-这些例外保护了仓库状态、编辑器配置、Git Hooks 以及 Claude Code 自身设置免受意外损坏。
+- `.git/`、`.config/git/`、`.vscode/`、`.idea/`、`.husky/`、`.cargo/`、`.devcontainer/`、`.yarn/`、`.mvn/`
+- **`.claude/` 整体受保护**，唯一例外是 **`.claude/worktrees/`**（Claude 存放 git worktree 的位置）
+- 另有受保护文件：`.gitconfig`、`.zshrc`、`.npmrc`、`.mcp.json`、`.claude.json` 等（见官方 [Permissions](https://code.claude.com/docs/en/permissions) 完整列表）
+
+> 旧文档曾写 `.claude/commands/`、`.claude/skills/` 可写——**已过时**。写入 `.claude/` 会触发确认；会话内可选择「允许 Claude 编辑自身设置」以跳过后续 `.claude/` 写入提示。
 
 ### 切换模式
 
 **会话中切换**：按 `Shift+Tab` 在 `default` → `acceptEdits` → `plan` → `auto` 之间循环切换，状态栏会显示当前模式。
 
-> `auto` 需要启动时传入 `--enable-auto-mode` 才会出现在循环中。`bypassPermissions` 需要以 `--permission-mode bypassPermissions` 启动才会出现。
+> v2.1.111 起 **`--enable-auto-mode` 已移除**；`auto` 默认出现在 `Shift+Tab` 循环中。启动时可用 `--permission-mode auto`。`bypassPermissions` 需以 `--permission-mode bypassPermissions` 启动才会出现在循环中。
 
 **启动时指定**：
 

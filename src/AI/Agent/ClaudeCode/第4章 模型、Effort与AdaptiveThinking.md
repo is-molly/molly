@@ -12,9 +12,10 @@ Claude Code 使用**模型别名（Model Alias）**来屏蔽版本细节，让�
 | 别名 | 行为 |
 |------|------|
 | `default` | 特殊值，清除所有模型覆盖，恢复为账号类型的推荐模型 |
-| `best` | 始终使用能力最强的可用模型，当前等价于 `opus` |
+| `best` | 有组织访问权限时用 **Fable 5**，否则最新 Opus |
+| `fable` | **Claude Fable 5**——最长自主任务、复杂推理（v2.1.170+，非默认模型） |
 | `sonnet` | 最新的 Sonnet 模型，适合日常编码任务 |
-| `opus` | 最新的 Opus 模型，适合复杂推理任务 |
+| `opus` | 最新的 Opus 模型（Anthropic API 上当前为 **Opus 4.8**），适合复杂推理 |
 | `haiku` | 快速高效的 Haiku 模型，适合简单任务 |
 | `sonnet[1m]` | Sonnet + 1M token 上下文窗口 |
 | `opus[1m]` | Opus + 1M token 上下文窗口 |
@@ -24,8 +25,8 @@ Claude Code 使用**模型别名（Model Alias）**来屏蔽版本细节，让�
 
 | API 端 | `opus` 解析为 | `sonnet` 解析为 |
 |--------|--------------|----------------|
-| Anthropic API / Claude Platform on AWS | **Opus 4.7** | **Sonnet 4.6** |
-| Amazon Bedrock / Vertex / Foundry | Opus 4.6 | Sonnet 4.5（可设环境变量覆盖） |
+| Anthropic API / Claude Platform on AWS | **Opus 4.8** | **Sonnet 4.6** |
+| Amazon Bedrock / Vertex / Foundry | Opus 4.6–4.7（可设环境变量覆盖） | Sonnet 4.5–4.6 |
 
 > 别名会随时间更新指向推荐版本。如需锁定特定版本，使用完整模型名（如 `claude-opus-4-7`）或设置对应环境变量。
 
@@ -33,7 +34,7 @@ Claude Code 使用**模型别名（Model Alias）**来屏蔽版本细节，让�
 
 | 账号类型 | 默认模型 |
 |----------|----------|
-| Max、Team Premium | Opus 4.7 |
+| Max、Team Premium | Opus 4.8 |
 | Pro、Team Standard、Enterprise、API | Sonnet 4.6 |
 | Bedrock、Vertex、Foundry | Sonnet 4.5 |
 

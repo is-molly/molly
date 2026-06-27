@@ -57,9 +57,14 @@ Claude Code 的引擎是统一的——CLAUDE.md、settings.json、MCP 配置在
 
 ## Slack 集成
 
-在 Slack 中 `@Claude`，附上 Bug 报告或功能描述，Claude Code 会生成 Pull Request。适用于：
-- 将 Bug 报告从聊天工具直接转化为代码修复
-- 团队协作中快速触发 Claude 任务
+在 Slack 频道中 `@Claude` 并描述 coding 任务，Claude 会检测 coding intent 并在 **claude.ai/code 创建云端 Web 会话**（非本地 Claude Code）。进度更新回帖到 Slack 线程，完成后可「View Session」或「Create PR」。
+
+要点：
+- 会话在**用户自己的 Claude 账号**下运行，消耗个人 plan 限额
+- 需连接 GitHub 并在 claude.ai/code 认证至少一个仓库
+- 仅支持**频道**（public/private），不支持 DM
+- 路由模式：Code only / Code + Chat（App Home 配置）
+- Team/Enterprise 正迁移至 **Claude Tag**（组织共享 @Claude 身份）
 
 ## Chrome 扩展（Beta）
 

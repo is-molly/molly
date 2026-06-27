@@ -14,8 +14,8 @@ Model Context Protocol（MCP）是由 Anthropic 制定的**开放标准**，用�
 | 传输方式 | 说明 | 适用场景 |
 |----------|------|----------|
 | **stdio** | 标准输入输出，Claude Code 启动本地进程 | 本地命令行工具 |
-| **HTTP+SSE** | HTTP 请求 + Server-Sent Events | 远程服务 |
-| **Streamable HTTP** | HTTP 流式传输 | 云端服务、自托管 |
+| **HTTP+SSE** | HTTP + Server-Sent Events（**legacy**，新配置优先 Streamable HTTP） |
+| **Streamable HTTP** | HTTP 流式传输（推荐） | 云端服务、自托管 |
 
 ## 配置 MCP Server
 
@@ -62,7 +62,13 @@ claude --strict-mcp-config --mcp-config ./mcp.json  # 仅使用指定配置
 
 ## OAuth 认证
 
-Claude Code 的 MCP OAuth 遵循 **RFC 9728**（Protected Resource Metadata）标准，自动发现授权服务器。OAuth 浏览器页面已升级为与 Claude Code 视觉风格统一，成功认证后自动关闭。
+Claude Code 的 MCP OAuth 遵循 **RFC 9728**（Protected Resource Metadata）标准，自动发现授权服务器。v2.1.186+ 支持命令行认证：
+
+```shell
+claude mcp login sentry          # 交互 OAuth
+claude mcp login sentry --no-browser  # SSH 环境打印 URL
+claude mcp logout sentry
+```
 
 ## 安全特性
 

@@ -15,10 +15,10 @@ Claude Code 支持四个层次的 CLAUDE.md，从最广泛到最具体：
 
 | 记忆类型 | 存储位置 | 用途 | 共享范围 |
 |----------|----------|------|----------|
-| **Enterprise 策略** | macOS: `/Library/Application Support/ClaudeCode/CLAUDE.md`<br>Linux: `/etc/claude-code/CLAUDE.md`<br>Windows: `C:\ProgramData\ClaudeCode\CLAUDE.md` | 组织级的编码规范、安全策略 | 全组织所有用户 |
+| **Enterprise 策略** | macOS: `/Library/Application Support/ClaudeCode/CLAUDE.md`<br>Linux: `/etc/claude-code/CLAUDE.md`<br>Windows: `C:\Program Files\ClaudeCode\CLAUDE.md` | 组织级的编码规范、安全策略 | 全组织所有用户 |
 | **User 记忆** | `~/.claude/CLAUDE.md` | 个人的全局偏好（所有项目生效） | 仅自己 |
 | **Project 记忆** | `./CLAUDE.md` 或 `./.claude/CLAUDE.md` | 项目共享的架构、规范、工作流 | 团队成员（通过 git） |
-| **Project 本地记忆** | `./CLAUDE.local.md` | 已弃用（推荐用 imports 替代），个人项目偏好 | 仅自己 |
+| **Project 本地记忆** | `./CLAUDE.local.md` | 个人项目偏好（建议加入 `.gitignore`） | 仅自己 |
 
 层级越高优先级越高，更具体的记忆叠加在更广泛的记忆之上。
 
@@ -117,11 +117,9 @@ See @README for project overview and @package.json for available npm commands.
 - @~/.claude/my-project-instructions.md
 ```
 
-支持相对路径和绝对路径。导入最多递归 5 层。
+支持相对路径和绝对路径。导入最多递归 **4 层**（4 hops）。`@path` 在 Markdown 代码块内不会被解析为导入。
 
-> 在 markdown 代码块中的 `@` 不会被当作导入。例如 `` `@anthropic-ai/claude-code` `` 不会触发导入。
-
-导入机制已经替代了原来的 `CLAUDE.local.md`，因为导入在多个 git worktree 之间工作得更好。
+> 跨 git worktree 共享个人指令时，推荐 `@~/.claude/my-project-instructions.md` 而非仅存在于单个 worktree 的 `CLAUDE.local.md`。
 
 ### 排除特定 CLAUDE.md
 
@@ -132,6 +130,24 @@ See @README for project overview and @package.json for available npm commands.
   "claudeMdExcludes": ["**/vendor/**/CLAUDE.md"]
 }
 ```
+
+## `.claude/rules/` 路径规则（推荐）
+
+大型项目应将指令拆到 `.claude/rules/*.md`，支持递归子目录。每条规则可带 `paths` frontmatter，**仅在 Claude 操作匹配文件时加载**，比全量 CLAUDE.md 更省 context：
+
+```yaml
+---
+paths:
+  - "src/api/**"
+  - "src/types/**"
+---
+# API 层编码规范
+- 所有 endpoint 必须带 request validation
+```
+
+- 无 `paths` 的规则：启动时加载，优先级同 `.claude/CLAUDE.md`
+- 用户级规则：`~/.claude/rules/`（先于项目规则加载，项目规则优先级更高）
+- 支持 symlink 跨项目共享规则
 
 ## 组织级记忆
 
@@ -144,9 +160,5 @@ See @README for project overview and @package.json for available npm commands.
   "claudeMd": "Always run make lint before committing. Follow SOC2 requirements."
 }
 ```
-
-## 路径特定规则
-
-CLAUDE.md 支持按文件路径指定规则。当 Claude 操作匹配的路径模式时，对应的规则会生效。这让你可以为项目的不同部分指定不同的编码规范。
 
 > **资料来源**：[Claude Code 官方文档 - Memory](https://code.claude.com/docs/en/memory)

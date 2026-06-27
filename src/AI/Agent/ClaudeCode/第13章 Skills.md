@@ -1,6 +1,6 @@
 ---
 order: 13
-date: 2026-06-26
+date: 2026-06-27
 ---
 
 # Skills
@@ -65,13 +65,14 @@ When explaining code, always include:
 | 字段 | 必填 | 说明 |
 |------|------|------|
 | `name` | 否 | 显示名称（也生成 `/name` 命令）。不填时使用目录名 |
-| `description` | **推荐** | Skill 的功能和触发时机。Claude 据此判断何时自动加载。超过 250 字符会被截断 |
+| `description` | **推荐** | Skill 功能与触发时机；Claude 据此自动加载 |
+| `when_to_use` | 否 | 补充触发场景；与 `description` **合计上限 1536 字符**（可用 `maxSkillDescriptionChars` 调整） |
 | `argument-hint` | 否 | 补全时显示的参数提示，如 `[issue-number]` |
 | `disable-model-invocation` | 否 | 设为 `true` 禁止 Claude 自动加载。仅你手动 `/name` 触发 |
 | `user-invocable` | 否 | 设为 `false` 从 `/` 菜单隐藏。用于背景知识，不应直接调用 |
 | `allowed-tools` | 否 | 该 Skill 激活时 Claude 可免确认使用的工具列表 |
 | `model` | 否 | 该 Skill 激活时使用的模型 |
-| `effort` | 否 | 该 Skill 激活时的 Effort 等级，覆盖会话等级。不支持 `max` |
+| `effort` | 否 | 该 Skill 激活时的 Effort 等级，覆盖会话等级（含 `max`） |
 | `context` | 否 | 设为 `fork` 时在 Fork 子代理上下文中运行 |
 | `agent` | 否 | `context: fork` 时指定子代理类型 |
 | `hooks` | 否 | 该 Skill 生命周期的 Hooks |
@@ -110,6 +111,24 @@ my-skill/
 - For complete API details, see [reference.md](reference.md)
 - For usage examples, see [examples.md](examples.md)
 ```
+
+## 描述预算与 `/skills`
+
+Claude 启动时按 **2% context 预算**（默认）列出可用 Skills 供模型选择。预算不足时低优先级 Skill 可能只显示名称。调整方式：
+
+```json
+{
+  "skillListingBudgetFraction": 0.02,
+  "maxSkillDescriptionChars": 1536,
+  "skillOverrides": {
+    "low-priority-skill": "name-only"
+  }
+}
+```
+
+环境变量 `SLASH_COMMAND_TOOL_CHAR_BUDGET` 可设固定字符预算。用 `/skills` 查看已加载 Skills 及描述占用。
+
+> Skills 专书：[01 管理架构](/AI/Skills/01-管理架构与快速上手.html) → [02 选型](/AI/Skills/02-选型与组合方案.html) → [03 基础](/AI/Skills/03-基础与生态概览.html)。
 
 ## 何时被调用
 

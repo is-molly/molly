@@ -348,20 +348,24 @@ cc-switch mcp validate <command>             # 验证命令是否在 PATH 中
 
 跨应用的 Skills 统一管理，与全书第 13 章的 Skills 体系互补——在 cc-switch 中统一安装，Claude Code 自动加载。
 
+**SPEC 格式**：`install` 接受 **`owner/repo:目录名`**（或仓库内唯一的目录短名），**没有** npx 的 `--skill`。首次使用某仓库须 `repos add`。
+
 ```
-cc-switch skills discover <query>            # 搜索
-cc-switch skills install <name>              # 安装
-cc-switch skills list                        # 已安装列表
-cc-switch skills enable <name> --app claude  # 为指定应用启用
-cc-switch skills disable <name> --app claude # 禁用
-cc-switch skills sync                        # 同步到应用目录
-cc-switch skills sync-method symlink         # 设同步方式（auto|symlink|copy）
-cc-switch skills repos add anthropics/skills # 添加仓库
-cc-switch skills repos list                  # 仓库列表
-cc-switch skills scan-unmanaged              # 扫描未管理 Skills
-cc-switch skills import-from-apps            # 导入
-cc-switch skills info <name>                 # 详情
-cc-switch skills uninstall <name>            # 卸载
+cc-switch skills repos add anthropics/skills   # 首次添加源仓库
+cc-switch skills discover frontend-design      # 查目录名
+cc-switch skills install anthropics/skills:frontend-design -a claude
+cc-switch skills discover <query>              # 搜索（别名 search）
+cc-switch skills install <spec>                # 安装（spec = 目录名 或 owner/repo:目录名）
+cc-switch skills list                          # 已安装列表
+cc-switch skills enable <name> --app claude    # 为指定应用启用
+cc-switch skills disable <name> --app claude   # 禁用
+cc-switch skills sync                          # 同步到应用目录
+cc-switch skills sync-method symlink           # 设同步方式（auto|symlink|copy）
+cc-switch skills repos list                    # 仓库列表
+cc-switch skills scan-unmanaged                # 扫描未管理 Skills
+cc-switch skills import-from-apps              # 导入
+cc-switch skills info <name>                   # 详情
+cc-switch skills uninstall <name>              # 卸载
 ```
 
 ---

@@ -16,7 +16,7 @@ Slash Commands（斜杠命令）是 Claude Code 交互界面中的内建命令�
 | `/clear` | 清空当前对话上下文，从零开始 | `/clear` |
 | `/compact` | 压缩对话上下文，释放 Token 空间 | `/compact` |
 | `/context` | 查看当前上下文使用情况 | `/context` |
-| `/cost` | 查看当前会话 Token 消耗与费用 | `/cost` |
+| `/cost` | 查看当前会话 Token 消耗与费用（**API 用户**；Pro/Max 订阅用户不适用） | `/cost` |
 | `/recap` | 查看当前会话摘要 | `/recap` |
 | `/copy` | 复制最近一段对话内容到剪贴板 | `/copy` |
 | `/resume` | 恢复之前的会话 | `/resume` |
@@ -54,8 +54,10 @@ Slash Commands（斜杠命令）是 Claude Code 交互界面中的内建命令�
 | 命令 | 功能 | 用法 |
 |------|------|------|
 | `/plan` | 以 Plan Mode 处理下一条 prompt（只读分析） | `/plan 重构认证模块` |
-| `/branch` | 创建 Git 分支 | `/branch feat/xxx` |
-| `/btw` | "By The Way"——让 Claude 在后台处理而不阻塞主流程 | `/btw` |
+| `/branch [name]` | **会话分支**——在当前对话点 fork，保留原会话 | `/branch try-approach` |
+| `/fork <directive>` | 后台 subagent 继承对话执行任务（v2.1.161+） | `/fork 跑完整测试套件` |
+| `/background` | 将整个会话 detach 为 background agent | `/background` |
+| `/btw <question>` | 旁路提问——**不写入主对话历史** | `/btw 这个 API 叫什么？` |
 
 ## 调试与反馈
 
@@ -77,7 +79,7 @@ Slash Commands（斜杠命令）是 Claude Code 交互界面中的内建命令�
 | `/claude-api` | 加载 Claude API 参考文档（Python/TypeScript/Java/Go/Ruby/C#/PHP/cURL + Agent SDK） |
 | `/debug [描述]` | 启用调试日志（见上文） |
 | `/loop [间隔] <prompt>` | 循环执行一个 prompt（如每 5 分钟检查一次部署状态） |
-| `/simplify [关注点]` | 审查最近修改文件的质量和复用性，并行派 3 个审查代理，汇总结果并修复 |
+| `/simplify [关注点]` | 审查最近修改文件的质量和复用性，并行派 3 个审查 subagent，汇总结果并修复 |
 
 ### `/batch` 详解
 
@@ -114,7 +116,7 @@ Slash Commands（斜杠命令）是 Claude Code 交互界面中的内建命令�
 | `Shift+Tab` | 切换权限模式 |
 | `Option+T` / `Alt+T` | 切换 Extended Thinking |
 | `Ctrl+O` | 切换详细思考模式 |
-| `Ctrl+B` | 将任务发送到后台 |
+| `Ctrl+B` | 将**当前 Bash 命令或 subagent** 移到后台（不是整个会话；全会话用 `/background`） |
 | `Ctrl+V` | 粘贴图片 |
 
 > **资料来源**：[Claude Code Skills 文档](https://code.claude.com/docs/en/skills)、[CLI Reference](https://code.claude.com/docs/en/cli-reference)、[Commands](https://code.claude.com/docs/en/commands)

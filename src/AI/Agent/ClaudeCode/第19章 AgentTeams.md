@@ -1,89 +1,95 @@
 ---
 order: 19
-date: 2026-06-26
+date: 2026-06-27
 ---
 
 # Agent Teams
 
 ## 什么是 Agent Teams
 
-Agent Teams（代理团队）是 Claude Code 的研究预览特性，允许多个 Claude Code 实例作为团队协同工作——一个会话作为 **Team Lead** 协调工作、分配任务、综合结果，**Teammates** 各自独立运行、互相通信。
+Agent Teams（代理团队）是 Claude Code 的**研究预览**特性：多个 Claude Code 实例协同工作——一个 **Team Lead** 协调、分配任务、综合结果，**Teammates** 各自独立运行、互相通信。
 
 与 Subagent 的关键区别：
-- Subagent 只能向主代理报告结果，无法与其他 Subagent 通信
-- Agent Teams 中 Teammate 之间可以**点对点直接通信**
-- Agent Teams 通过 Git-based Locking 机制协调任务
+- Subagent 只能向主代理报告，无法与其他 Subagent 通信
+- Agent Teams 中 Teammate 之间可**点对点直接通信**（mailbox）
+- 协调靠**本地共享 task list + file locking**，不是 Git merge/locking
 
 ## 启用
 
-Agent Teams 是实验性功能，默认关闭：
+默认关闭：
 
 ```shell
 export CLAUDE_CODE_EXPERIMENTAL_AGENT_TEAMS=1
 ```
 
-或在 `settings.json` 中设置。
+或在 `settings.json` 中设置。需要 **Opus 4.6+**（Bedrock/Vertex/Foundry 上 auto mode 需 Opus 4.7/4.8）。
 
-需要 **Opus 4.6+** 模型。
+> v2.1.178+：spawn Teammate 不再需要手动 setup；`TeamCreate`/`TeamDelete` 工具已移除，team 名由 session ID 自动派生。
 
 ## 架构
 
 ```mermaid
 graph TD
     U[用户] --> L[Team Lead]
-    L --> T1[Teammate 1<br/>独立上下文窗口]
-    L --> T2[Teammate 2<br/>独立上下文窗口]
-    L --> T3[Teammate 3<br/>独立上下文窗口]
-    T1 <-->|Peer-to-Peer 通信| T2
-    T2 <-->|Peer-to-Peer 通信| T3
-    T1 <-->|Peer-to-Peer 通信| T3
-    L -->|Git-based Task Locking| G[Git 仓库]
-    T1 --> G
-    T2 --> G
-    T3 --> G
+    L --> T1[Teammate 1<br/>独立上下文]
+    L --> T2[Teammate 2<br/>独立上下文]
+    L --> T3[Teammate 3<br/>独立上下文]
+    T1 <-->|SendMessage| T2
+    T2 <-->|SendMessage| T3
+    T1 <-->|SendMessage| T3
+    L --> TL[共享 Task List]
+    T1 --> TL
+    T2 --> TL
+    T3 --> TL
 ```
 
-关键机制：
-- **Team Lead** 分解任务、分配、综合结果
-- **Git-based Locking**：Teammate 通过写入共享目录来认领任务
-- **Continuous Merge**：变更持续拉取/推送，无需人工介入
-- **Peer-to-Peer Messaging**：Teammate 之间直接通信
+| 组件 | 角色 |
+|------|------|
+| **Team Lead** | 主会话，spawn Teammates、协调、综合 |
+| **Teammates** | 独立 Claude Code 实例，各有独立 context window |
+| **Task list** | 共享任务列表（pending / in progress / completed），支持依赖 |
+| **Mailbox** | Teammate 间消息系统 |
 
-## 核心交互流程
+### 存储位置（本地，非 Git）
 
-1. 用户向 Team Lead 描述总体目标
-2. Team Lead 制定计划、分解任务
-3. Team Lead 将任务写入共享 Git 工作区
-4. Teammate 认领任务（Git Locking）
-5. Teammate 在独立上下文中执行任务
-6. Teammate 之间通过 mailbox 通信
-7. 变更持续合并到共享分支
-8. Team Lead 综合结果并汇报
+- Team config：`~/.claude/teams/{team-name}/config.json`（会话结束删除）
+- Task list：`~/.claude/tasks/{team-name}/`（本地持久，不上传云端）
+
+`team-name` 形如 `session-xxxxxxxx`（session ID 前 8 位）。**没有**项目级 `.claude/teams/` 配置——该路径只是普通文件。
+
+### 任务协调
+
+- Lead 创建任务；Teammate **自认领**（self-claim）或 Lead 分配
+- **File locking** 防止多 Teammate 同时认领同一任务
+- 任务依赖自动管理：前置任务完成后，blocked 任务自动 unblock
+- **没有** continuous Git merge——各 Teammate 在各自上下文中工作，通过 messaging 与 task list 协调
+
+### 权限与上下文
+
+- Teammate 继承 Lead 的 permission mode（Lead 用 `--dangerously-skip-permissions` 则 Teammate 亦然）
+- 各 Teammate 加载 CLAUDE.md、MCP、skills，但**不继承** Lead 的对话历史
+- 可引用 subagent 定义 spawn Teammate（复用 `tools`、`model` 配置）
+
+## 核心流程
+
+1. 用户向 Team Lead 描述目标
+2. Lead 制定计划、写入 task list、spawn Teammates
+3. Teammate 认领任务、在独立上下文中执行
+4. Teammate 通过 mailbox 互相通信；完成时通知 Lead
+5. Lead 综合结果汇报
 
 ## 最佳实践
 
-### 开始前
-
-1. **从研究和审查开始**：不涉及代码编写的任务（PR 审查、库研究、Bug 调查）是入门 Agent Teams 的最佳方式
-2. **给 Teammate 充足的上下文**：任务描述需包含文件路径、约束、验收标准
-
-### 任务粒度
-
-- **避免文件冲突**：不同 Teammate 应各自处理一套独立的文件
-- **合理团队规模**：从 2-3 个 Teammate 起步，逐步扩展
-- **任务粒度适当**：太细的任务协调开销大，太粗的任务不够并行
-
-### 执行中
-
-- **监控和引导**：定期检查各 Teammate 进展
-- **Plan Approval**：可要求 Teammate 在执行前请求计划审批
-- **关注 Token 消耗**：多个同时运行的模型调用意味着更高的成本
+1. **从研究/审查入手**：PR review、库调研、Bug 调查——不涉及大量并行写同一文件
+2. **避免文件冲突**：不同 Teammate 处理独立文件集
+3. **合理规模**：2–3 个 Teammate 起步
+4. **监控 Token**：每个 Teammate 独立 context，成本显著高于单会话
 
 ## 已知限制
 
 - 实验性功能，稳定性不保证
 - 会话恢复可能丢失协调状态
-- 存在孤儿 tmux 会话的风险
-- 任务协调和关闭行为有已知问题
+- 存在孤儿 tmux 会话风险
+- Teammate 有时未标记 task completed，会阻塞依赖任务——需手动更新
 
 > **资料来源**：[Claude Code 官方文档 - Agent Teams](https://code.claude.com/docs/en/agent-teams)

@@ -25,16 +25,21 @@ Claude 会：
 3. 生成符合规范的提交消息
 4. 执行 `git add` 和 `git commit`
 
-### 创建分支
+### 创建 Git 分支
+
+Git 分支请用自然语言或 Bash，**不要**用 `/branch`（那是会话分支，见下文）：
 
 ```
 claude "create a branch for the new auth feature"
+# 或让 Claude 执行：git checkout -b feat/oauth2-integration
 ```
 
-或使用 `/branch` 命令：
+### 会话分支（`/branch`，非 Git）
+
+`/branch` 在**当前对话的这一点**创建会话分支，便于尝试不同方向而不丢失原对话。可用 `/resume` 回到原会话。若要把任务交给后台 subagent 而非自己切换副本，用 **`/fork`**（v2.1.161+）。
 
 ```
-/branch feat/oauth2-integration
+/branch try-refactor-approach
 ```
 
 ### 创建 Pull Request
@@ -121,7 +126,9 @@ type(scope): 简短的变更描述
 |-----------|------|
 | `claude "commit..."` | 启动交互会话并请求提交 |
 | `claude -p "commit..."` | 非交互模式提交 |
-| `/branch <name>` | 创建分支 |
+| `claude --from-pr <n>` | 恢复与某 PR 关联的会话 |
+| `/branch [name]` | **会话分支**（conversation fork），不是 Git 分支 |
+| `/fork <directive>` | 后台 subagent 继承对话执行任务（v2.1.161+） |
 | `claude --worktree` | 在独立的 git worktree 中启动（第 17 章详述） |
 | `claude project purge` | 删除项目的所有 Claude Code 状态（v2.1.126+） |
 

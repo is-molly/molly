@@ -10,7 +10,7 @@ category:
 
 # Claude Code
 
-> **本文档基于 Claude Code v2.1.181（2026 年 6 月 17 日发布）编写。** 部分功能标注了引入版本。
+> Skills 深度内容见 [Skills 专书](/AI/Skills/)（从 [01 管理架构](/AI/Skills/01-管理架构与快速上手.html) 读起）。
 
 <!-- more -->
 

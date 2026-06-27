@@ -15,6 +15,7 @@ date: 2026-06-26
 | `ANTHROPIC_DEFAULT_OPUS_MODEL` | `opus` 别名解析为的模型 |
 | `ANTHROPIC_DEFAULT_SONNET_MODEL` | `sonnet` 别名解析为的模型 |
 | `ANTHROPIC_DEFAULT_HAIKU_MODEL` | `haiku` 别名解析为的模型 |
+| `ANTHROPIC_DEFAULT_FABLE_MODEL` | `fable` 别名解析为的模型 |
 | `CLAUDE_CODE_API_KEY_HELPER_TTL_MS` | API Key 刷新间隔（毫秒） |
 
 ## Effort 与思考
@@ -39,6 +40,8 @@ date: 2026-06-26
 |------|------|
 | `CLAUDE_CODE_DISABLE_AUTO_MEMORY` | 禁用 Auto Memory |
 | `CLAUDE_CODE_ADDITIONAL_DIRECTORIES_CLAUDE_MD` | 从 `--add-dir` 目录加载 CLAUDE.md |
+| `SLASH_COMMAND_TOOL_CHAR_BUDGET` | Skills 描述 listing 固定字符预算 |
+| `CLAUDE_CODE_DISABLE_BUNDLED_SKILLS` | 禁用内置 bundled skills |
 
 ## 界面与终端
 

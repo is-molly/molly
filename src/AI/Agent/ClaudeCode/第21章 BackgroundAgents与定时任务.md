@@ -1,88 +1,87 @@
 ---
 order: 21
-date: 2026-06-26
+date: 2026-06-27
 ---
 
 # Background Agents 与定时任务
 
-## Ctrl+B 后台化
+官方将「后台运行」和「定时自动化」分为多层，不要混为一谈。
 
-在 Claude Code 交互模式中，按 `Ctrl+B` 将当前所有运行中的任务发送到后台，你可以继续其他工作。
+## Ctrl+B — 后台化当前任务（会话内）
 
-## 后台代理
+**不是**把整个 Claude Code 会话 detach 到后台。
 
-后台代理（Background Agents）可以在你关闭终端后继续运行。在 Desktop App 的 Code 标签页中可以查看和管理。
+`Ctrl+B` 将**当前正在运行的 Bash 命令或 subagent** 移到后台，主对话可继续。Tmux 用户需按两次（prefix 冲突）。用 `/tasks`（别名 `/bashes`）查看会话内后台项。
 
-## `/loop` —— 循环执行
+> 官方：[Keyboard shortcuts](https://code.claude.com/docs/en/keybindings) — “Backgrounds bash commands and agents”
+
+## `/background` — 整个会话后台化
+
+将整个 Claude Code 会话 detach 为 **background agent**，释放当前终端：
+
+```
+/background
+/background 继续跑测试并告诉我结果
+/bg
+```
+
+或启动时：
+
+```shell
+claude --bg "investigate the flaky test"
+```
+
+用 `claude agents` 监控；`claude attach <id>` 重新 attach。
+
+## Agent View（研究预览）
+
+v2.1.158+ 的 `claude agents` 列出所有 background 会话（运行中、等待输入、已完成）。v2.1.144+ 在 `/resume` 选择器中 background 会话标记为 `bg`。
+
+## `/loop` — 会话内循环
 
 ```
 /loop 5m check if the deploy finished
 ```
 
-在会话保持打开期间按指定间隔重复执行 prompt。适用于：
-- 轮询部署状态
-- 追踪 CI 运行
-- 定期重新运行某个 Skill
+在**当前会话保持打开**期间按间隔重复执行 prompt。7 天过期；`--resume` 可恢复。禁用：`CLAUDE_CODE_DISABLE_CRON=1`。
 
-间隔支持 `s`（秒）、`m`（分）、`h`（小时）。
+适用：轮询部署、追踪 CI。与 Routines（云端）不同——**计算机关闭则停止**。
 
-## 定时任务（Scheduled Tasks）
+## 定时自动化三层
 
-### 云端定时任务
+| 层级 | 入口 | 运行位置 | 计算机关机 |
+|------|------|----------|------------|
+| **Routines** | `/schedule`、`/routines`、claude.ai/code/routines | Anthropic 云端 | 可继续 |
+| **Desktop 定时任务** | Desktop App UI | 本机 | 需开机 |
+| **`/loop`** | 当前 CLI 会话 | 本机 | 停止 |
 
-在 Anthropic 管理的基础设施上运行，计算机关机也能继续执行。
+### Routines（研究预览）
 
-创建方式：
-- Web 界面：[claude.ai/code](https://claude.ai/code)
-- Desktop App
-- CLI：`/schedule`
+`/schedule` 创建 **Routines**——在 Anthropic 托管基础设施上自主运行（无权限弹窗）。触发方式：Schedule、API POST、GitHub 事件。Team/Enterprise 可由 admin 禁用。
 
-### 桌面定时任务
+### Desktop 定时任务
 
-在你自己的机器上运行，直接访问本地文件和工具。
+在 Desktop App 的 Code 标签创建，直接访问本地文件，机器需保持运行。
 
-### `/schedule` 命令
+## 通知
 
-创建定期重复的任务，如：
-- 每日 PR 审查
-- 过夜 CI 故障分析
-- 每周依赖审计
-- PR 合并后同步文档
-
-## 通知系统
-
-### 任务完成通知
-
-Claude 完成任务后可以推送通知：
-- 桌面通知
-- 移动端通知（通过 Claude iOS/Android 应用）
-- 你可以让 Claude 创建 Hook 通知在任务完成时播放声音
-
-### 抑制通知
-
-在机器前工作时，可通过 `CLAUDE_CLIENT_PRESENCE_FILE` 环境变量指向一个标记文件来抑制移动端推送通知：
+Claude 完成任务后可推送桌面/移动端通知。抑制移动端推送：
 
 ```shell
 export CLAUDE_CLIENT_PRESENCE_FILE=~/.claude/presence
 ```
 
-### 通知类型的 Hook Matcher
+Hook `Notification` matcher 包括：`permission_prompt`、`idle_prompt`、`auth_success`、`elicitation_dialog` 等。
 
-| Notification Matcher | 触发时机 |
-|---------------------|----------|
-| `permission_prompt` | 需要权限确认 |
-| `idle_prompt` | Claude 等待用户输入超过 60 秒 |
-| `auth_success` | 认证成功 |
-| `elicitation_dialog` | MCP 工具需要用户输入 |
+## 对比速查
 
-## Agent View
+| 操作 | 命令/快捷键 | 作用对象 |
+|------|-------------|----------|
+| 后台化 subagent/Bash | `Ctrl+B` | 会话内单项任务 |
+| 后台化整个会话 | `/background`、`claude --bg` | 整个 Claude Code 进程 |
+| 查看会话内后台 | `/tasks` | subagent、Bash、workflow |
+| 查看所有 background 会话 | `claude agents` | 跨终端会话 |
+| 云端定时 | `/schedule` | Routines |
+| 会话内轮询 | `/loop` | 当前终端会话 |
 
-v2.1.158 起提供 Agent View——查看所有 Claude Code 会话的统一列表：
-
-```shell
-claude agents
-```
-
-显示每个会话的状态：运行中、等待你、已完成。
-
-> **资料来源**：[Claude Code 官方文档 - Scheduled Tasks](https://code.claude.com/docs/en/scheduled-tasks)、[Power User Tips](https://support.claude.com/en/articles/14554000-claude-code-power-user-tips)
+> **资料来源**：[Scheduled tasks](https://code.claude.com/docs/en/scheduled-tasks)、[Routines](https://code.claude.com/docs/en/routines)、[Agent view](https://code.claude.com/docs/en/agent-view)、[Commands](https://code.claude.com/docs/en/commands)
