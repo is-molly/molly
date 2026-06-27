@@ -7,10 +7,10 @@ date: 2026-06-27
 
 > **章节类型：工作流方法论**（一整条 AI 驱动开发流水线，不是单个领域 Skill）。  
 > 同类章节：[08 四套系统](08-工作流方法论-四套系统.md)（GSD / gstack / mattpocock / Karpathy）。  
-> **组合安装 + 与 frontend-design 串联的编程工作流** → [02 方案 A](02-选型与组合方案.md#方案-a-工作流)。  
-> 安装：Plugin → Claude Code `/plugin`（见 [01 管理架构](01-管理架构与快速上手.md)）。
+> **组合安装 + 与 frontend-design 串联的编程工作流** → [03 方案 A](03-选型与组合方案.md#方案-a-工作流)。  
+> 安装：Plugin → Claude Code `/plugin`（见 [02 管理架构](02-管理架构与快速上手.md)）。
 
-## 7.1 项目概述
+## 项目概述
 
 Superpowers 是目前 Claude Code 生态中 Stars 数最高（~239K，2026-06）的 Skill 项目。它不是单个 Skill，而是一个**完整的软件开发方法论**，被封装为 Claude Code 的 Plugin（在 Plugin 体系下打包了 Skills + Hooks + Agents + Commands）。
 
@@ -23,7 +23,7 @@ Superpowers 是目前 Claude Code 生态中 Stars 数最高（~239K，2026-06）
 
 Jesse Vincent 在 2025 年 10 月的博客中描述了 Superpowers 的起源：他在用 Claude Code 开发 Request Tracker 时，反复遇到同一个模式——Claude 跳过了需求理解直接开始写代码、跳过测试、产出的代码语法正确但架构错误。问题不在 Claude 的能力，而在于缺少一个**专业开发流程**。Superpowers 就是这个流程，以 Skills 的形式编码。
 
-## 7.2 设计哲学
+## 设计哲学
 
 Superpowers 有四条核心原则：
 
@@ -39,7 +39,7 @@ Superpowers 有四条核心原则：
 
 这句话解释了 Superpowers 的设计标准：连一个"没有品味、没有判断力、不了解项目、讨厌写测试但充满热情的初级工程师"都能照着执行。正是因为这种极端约束，Superpowers 的指令才能被 Claude 可靠地执行。
 
-## 7.3 架构设计
+## 架构设计
 
 ### Plugin 结构
 
@@ -126,11 +126,11 @@ Superpowers 的 15 个 Skills 分成四组：
 | `using-superpowers` | 介绍 Skills 体系自身 |
 | `getting-started` | 首次安装的引导 Skill |
 
-## 7.4 逐个 Skill 详细教学
+## 逐个 Skill 详细教学
 
 以下基于 Superpowers 实际的 SKILL.md 源码编写。每个 Skill 的指令逻辑、检查点、决策门都来自源码原文。
 
-### 7.4.1 brainstorming — 编码前的强制性思考
+### brainstorming — 编码前的强制性思考
 
 **自动触发条件**：任何涉及"创建功能、构建组件、添加功能、修改行为"的操作。
 
@@ -154,7 +154,7 @@ Superpowers 的 15 个 Skills 分成四组：
 
 brainstorming 完成后，Skill 会问："Ready to set up for implementation?" 然后自动引导进入 `using-git-worktrees` 创建隔离工作区 → `writing-plans` 编写详细计划。
 
-### 7.4.2 test-driven-development — 铁律级 TDD 执行
+### test-driven-development — 铁律级 TDD 执行
 
 **自动触发条件**：实现任何功能或修复 Bug 之前。
 
@@ -256,7 +256,7 @@ npm test path/to/test.test.ts
 否则 → 不是 TDD
 ```
 
-### 7.4.3 systematic-debugging — 四阶段根因分析
+### systematic-debugging — 四阶段根因分析
 
 **自动触发条件**：遇到任何 Bug、测试失败、意外行为。
 
@@ -296,7 +296,7 @@ npm test path/to/test.test.ts
 
 **关键安全阀**：如果尝试了 3 次以上修复全部失败，这可能是架构层面的问题，而不是实现 Bug。Superpowers 会阻止你继续试第 4 次，强制你停下来质疑"是不是从根本上走错了方向"。
 
-### 7.4.4 subagent-driven-development — 多 Agent 驱动开发
+### subagent-driven-development — 多 Agent 驱动开发
 
 **自动触发条件**：当实施计划准备就绪，且任务是独立的。
 
@@ -337,7 +337,7 @@ npm test path/to/test.test.ts
 - 让子 Agent 自己去读计划文件（控制器必须提供完整文本）
 - spec 审查没通过就进行代码质量审查（顺序错误）
 
-### 7.4.5 writing-plans — 为"零上下文工程师"编写实施计划
+### writing-plans — 为"零上下文工程师"编写实施计划
 
 **触发条件**：设计方案已经批准，需要详细的实施计划。
 
@@ -405,7 +405,7 @@ git commit -m "feat: add specific feature"
 1. **Subagent-Driven（当前会话）** — 派发子 Agent 执行，每任务两阶段审查
 2. **Parallel Session（新会话）** — 在新会话中用 `executing-plans` 批次执行
 
-### 7.4.6 其他重要 Skill
+### 其他重要 Skill
 
 **using-git-worktrees** — 为每个 Feature 创建隔离的 Git Worktree 分支。运行项目初始化、验证测试基线。这保证了主分支始终干净。
 
@@ -423,7 +423,7 @@ git commit -m "feat: add specific feature"
 
 **writing-skills** — 如何按照 Superpowers 规范创建新 Skill。包含测试方法论。
 
-## 7.5 完整工作流串联
+## 完整工作流串联
 
 Superpowers 最强大的地方是 Skill 之间的自动串联。从模糊想法到合并分支的全流程：
 
@@ -476,9 +476,9 @@ Task 2: 实现注册 API
 
 从"帮我做用户认证"到可合并的代码，你只需要回答 brainstorming 的问题确认设计方向，然后说"go"。这就是 Superpowers 的核心价值。
 
-## 7.6 安装
+## 安装
 
-> 通用规则（官方 vs 作者 Market、装完怎么验）→ [05 安装手册 § 5.0](05-安装方式参考手册.md)
+> 通用规则（官方 vs 作者 Market、装完怎么验）→ [05 · 多路径安装](05-安装方式参考手册.md#多路径安装怎么选装完怎么验)
 
 ### Claude Code — 推荐（官方 Market）
 
@@ -521,7 +521,7 @@ Task 2: 实现注册 API
 
 CC Switch **不能**代装 Superpowers Plugin。
 
-## 7.7 更新
+## 更新
 
 ```
 /plugin update superpowers

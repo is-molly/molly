@@ -6,9 +6,9 @@ date: 2026-06-27
 # 领域 Skill · 内容创作
 
 > **章节类型：领域 Skill**（垂直场景：文章、配图、发布）。与工作流方法论章（07/08）不同。  
-> **五方案组合** → [02 本章导航](02-选型与组合方案.md#本章导航)；**只装 baoyu 单体** → [§ 10.6](#_10-6-standalone)。
+> **五方案组合** → [03 本章导航](03-选型与组合方案.md#本章导航)；**只装 baoyu 单体** → [单独使用](#_10-5-standalone)。
 
-## 10.1 项目概述
+## 项目概述
 
 baoyu-skills 把内容创作流程——图片、视觉、文档转换、多平台发布——打包为 **20+ 个**可组合 Skill（上游 README 表述；Plugin 内具体数量随版本变）。
 
@@ -21,7 +21,7 @@ baoyu-skills 把内容创作流程——图片、视觉、文档转换、多平�
 
 baoyu-skills 证明了一件事：Claude Code 不只是编程工具——它可以成为内容创作者的全套生产流水线。
 
-## 10.2 三层架构
+## 三层架构
 
 baoyu-skills 按职责分为三层：
 
@@ -79,9 +79,9 @@ baoyu-skills 按职责分为三层：
 
 发布 Skill 采用的是**半自动模式**：脚本把内容填入浏览器，你检查后手动点击发布。这是有意为之的安全机制——如果你需要全自动发布，需要自己对接 API 层。
 
-## 10.3 逐个核心 Skill 详细教学
+## 逐个核心 Skill 详细教学
 
-### 10.3.1 baoyu-xhs-images — 小红书卡片
+### baoyu-xhs-images — 小红书卡片
 
 **触发**：`/baoyu-xhs-images <文章路径或内容>`
 
@@ -145,7 +145,7 @@ baoyu-skills 按职责分为三层：
 /baoyu-xhs-images posts/ai-future/article.md --yes
 ```
 
-### 10.3.2 baoyu-infographic — 信息图
+### baoyu-infographic — 信息图
 
 **触发**：`/baoyu-infographic <内容>`
 
@@ -194,13 +194,13 @@ baoyu-skills 按职责分为三层：
 
 （完整 17 种风格定义在 `references/styles/` 目录下各自的 `.md` 文件中）
 
-### 10.3.3 baoyu-diagram — SVG 图表
+### baoyu-diagram — SVG 图表
 
 **与其他生成类 Skill 的根本区别**：不依赖图片生成模型，Claude 直接写 SVG 代码。零 API 成本，完全可控。默认使用暗色主题配色方案。
 
 **支持类型**：Architecture（架构图）、Flowchart（流程图）、Sequence（时序图）、Structural（类图/ER 图）、Mind Map（思维导图）、Timeline（时间线）、Illustrative（概念图）、State Machine（状态机）、Data Flow（数据流图）。
 
-### 10.3.4 baoyu-comic — 知识漫画
+### baoyu-comic — 知识漫画
 
 **三维组合系统**：
 
@@ -212,11 +212,11 @@ baoyu-skills 按职责分为三层：
 
 特殊预设：`ohmsha`（欧姆社学习漫画风格）、`wuxia`（武侠风格）、`shoujo-manga`（少女漫画特殊规则）。
 
-### 10.3.5 baoyu-slide-deck — 幻灯片
+### baoyu-slide-deck — 幻灯片
 
 从文章自动生成完整幻灯片。17 种预设风格，输出 `.pptx` 和 `.pdf`。
 
-### 10.3.6 baoyu-image-gen — 图片生成引擎
+### baoyu-image-gen — 图片生成引擎
 
 **触发方式**：所有需要 AI 图片生成的 Skill 均调用此引擎（v2.5.0 起 `baoyu-imagine` 已合并至此，目录名仍为 `baoyu-image-gen`）。
 
@@ -227,9 +227,9 @@ baoyu-skills 按职责分为三层：
 /baoyu-image-gen --batchfile batch.json --jobs 4
 ```
 
-## 10.4 安装
+## 安装
 
-> 多路径规则 → [05 安装手册 § 5.0](05-安装方式参考手册.md)
+> 多路径规则 → [05 · 多路径安装](05-安装方式参考手册.md#多路径安装怎么选装完怎么验)
 
 ### 推荐（npx / CC Switch，按需装）
 
@@ -275,11 +275,11 @@ npx skills add JimLiu/baoyu-skills -g -a claude-code -y
 
 ---
 
-<a id="_10-6-standalone"></a>
+<a id="_10-5-standalone"></a>
 
-## 10.6 不经 02 方案单独使用
+## 不经 03 方案单独使用
 
-> 只装 **一两个** baoyu Skill、不走 [02 五方案](02-选型与组合方案.md#本章导航) 时，用本节。内容创作 **没有** Superpowers 式强制链，靠 **Skill 名 / slash** 触发。
+> 只装 **一两个** baoyu Skill、不走 [03 五方案](03-选型与组合方案.md#本章导航) 时，用本节。内容创作 **没有** Superpowers 式强制链，靠 **Skill 名 / slash** 触发。
 
 ### 通用起手
 
@@ -314,7 +314,7 @@ Claude: [在同 Skill 内迭代，不必重装]
 
 | 步骤 | 做什么 |
 |------|--------|
-| 1 | 确认 API Key / Provider（见 § 10.2 引擎层；无 Key 时上游支持 Gemini Web fallback） |
+| 1 | 确认 API Key / Provider（见 三层架构 引擎层；无 Key 时上游支持 Gemini Web fallback） |
 | 2 | `/baoyu-xhs-images` 或自然语言点名 Skill + 主题/风格/张数 |
 | 3 | 迭代 prompt；发布用 `baoyu-post-to-*` **另装**对应 Skill |
 
@@ -327,17 +327,17 @@ Claude: [在同 Skill 内迭代，不必重装]
 Claude: [分析文章结构 → 推荐风格 → 生成插图文件]
 ```
 
-### 与 02 方案的关系
+### 与 03 方案的关系
 
 | 你的情况 | 读哪里 |
 |----------|--------|
 | 只写内容、已有 coding 流程 | **本节** |
-| 内容 + 产品 Sprint + UI | [02 方案 C](02-选型与组合方案.md#方案-c-工作流)（gstack，非 baoyu 专章） |
-| Token 敏感 + 多步研究写作 | [02 方案 E](02-选型与组合方案.md#方案-e-工作流) + 本节 baoyu |
+| 内容 + 产品 Sprint + UI | [03 方案 C](03-选型与组合方案.md#方案-c-工作流)（gstack，非 baoyu 专章） |
+| Token 敏感 + 多步研究写作 | [03 方案 E](03-选型与组合方案.md#方案-e-工作流) + 本节 baoyu |
 
-安装细节 → [§ 10.4](#104-安装)。生态表 → [11 生态索引](11-生态索引.md)。
+安装细节 → [安装](#安装)。生态表 → [11 生态索引](11-生态索引.md)。
 
-## 10.5 更新
+## 更新
 
 | 安装方式 | 更新 |
 |----------|------|

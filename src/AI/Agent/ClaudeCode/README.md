@@ -10,7 +10,7 @@ category:
 
 # Claude Code
 
-> Skills 深度内容见 [Skills 专书](/AI/Skills/)（从 [01 管理架构](/AI/Skills/01-管理架构与快速上手.html) 读起）。
+> Skills 深度内容见 [Skills 专书](/AI/Skills/)（从 [02 管理架构](/AI/Skills/02-管理架构与快速上手.html) 读起）。
 
 <!-- more -->
 

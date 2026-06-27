@@ -11,11 +11,21 @@ date: 2026-06-26
 
 ## cc-switch CLI
 
-**GitHub**：[SaladDay/cc-switch-cli](https://github.com/SaladDay/cc-switch-cli) ｜ **当前版本**：v5.4.0 ｜ **编写语言**：Rust
+**项目**：[farion1231/cc-switch](https://github.com/farion1231/cc-switch)（桌面 GUI + CLI/TUI 一体，如 v5.8.x）｜ CLI fork：[SaladDay/cc-switch-cli](https://github.com/SaladDay/cc-switch-cli) ｜ **编写语言**：Rust
+
+### 三种界面（写文档时最容易混）
+
+| 入口 | 实际体验 | 典型命令 |
+|------|----------|----------|
+| **桌面 GUI** | 点按钮、表单、Preset 下拉 | 打开 CC Switch 应用 → MCP / Provider / Skills 面板 |
+| **TUI** | 全屏终端，`j`/`k` 导航，`a`/`e` 增删改 | `cc-switch`（无子命令） |
+| **CLI 子命令** | 单条命令；**MCP / Provider 添加常打开 `$EDITOR`（vim）** | `cc-switch mcp add`、`cc-switch provider add` |
+
+**易错点：** 把 **GUI 表单步骤** 写成 **`cc-switch mcp add` 的行为**——CLI 的 `mcp add` 是 **外部编辑器 + JSON**，不是「选 HTTP → 填 URL」问答。Provider 在较新版本里也可能是 **TUI 问答 + 外部编辑器收尾**，与 MCP 不完全相同；以本机 `cc-switch --version` 为准。
 
 ### 定位
 
-cc-switch CLI 用 Rust 编写，是一个纯终端的配置管理工具。它的核心价值是**管理多个 AI 编码工具的 API 提供方（Provider）配置**——Claude Code、Codex、Gemini CLI、OpenCode、OpenClaw 各有不同的配置格式（JSON / TOML / .env），每换一个 API 提供方就要手动改文件。cc-switch 提供一套统一的命令行界面来管理这一切。
+cc-switch CLI 用 Rust 编写，是 **TUI + CLI 双模式** 的配置管理工具（桌面版另有 GUI）。核心价值是**管理多个 AI 编码工具的 API 提供方（Provider）配置**——Claude Code、Codex、Gemini CLI、OpenCode、OpenClaw 各有不同的配置格式（JSON / TOML / .env），每换一个 API 提供方就要手动改文件。cc-switch 提供统一界面管理这一切。
 
 与 Claude Code 的关系：cc-switch 不是 Claude Code 的替代品，也不修改 Claude Code 本身。它只是帮你管理 `~/.claude/settings.json`、`~/.claude.json`、`~/.codex/config.toml` 这些配置文件，让你在多个 API 提供方之间快速切换。
 
@@ -87,9 +97,13 @@ cc-switch provider fetch-models <id>  # 从 API 获取远程模型列表
 cc-switch provider export <id>        # 导出到 ./.claude/settings.local.json
 ```
 
-### 创建提供方（完整交互流程）
+### 创建提供方：TUI 问答 vs CLI 外部编辑器
 
-运行 `cc-switch provider add` 后，进入 12 步交互式向导：
+**`cc-switch provider add`（CLI）** 在 5.8+ 常见流程：终端问答若干项 → 展示 **Provider Configuration Summary** → 可选 **Opening external editor...** 改 JSON → 确认写入。不是 MCP 那种「一上来就只有 vim」，但**同样不是**桌面 GUI 的鼠标表单。
+
+**`cc-switch`（TUI，无子命令）** 里添加 Provider 则是全屏逐步问答，字段含义与下表一致。
+
+下列 **Step 1–13** 是 **字段说明 + TUI 参考**（DeepSeek / 智谱示例也按此填）；若你本机 CLI 直接进了 vim，在编辑器里填 **等价的 id、name、baseUrl、apiKey、models** 即可。
 
 **Step 1：Select provider type**
 
@@ -313,7 +327,7 @@ claude
 
 ### 关于 Quota 查询报错
 
-切换到智谱后，cc-switch 的 Provider 详情面板会显示：
+切换到智谱后，**桌面 GUI** 的 Provider 详情可能显示：
 
 ```
 Quota: query failed  API error: 当前用户不存在coding plan
@@ -329,11 +343,20 @@ Quota: query failed  API error: 当前用户不存在coding plan
 
 统一管理 Claude Code、Codex、Gemini CLI、OpenCode 的 MCP Server 配置。支持 stdio / HTTP / SSE 三种传输协议。
 
+**三种入口（不要混用描述）：**
+
+| 方式 | 行为 |
+|------|------|
+| **桌面 GUI** | 点 **MCP** → **+** → Preset 或 Custom 表单（Server ID、Transport、URL/Command 等）→ 保存 |
+| **`cc-switch mcp add`** | 打开 **`$EDITOR` 外部编辑器**（未设置时常为 vim）编辑 JSON 模板；保存退出后写入 CC Switch 库 |
+| **`cc-switch` TUI** | MCP 区 `a` 添加 / `e` 编辑（`j`/`k` 导航） |
+| **桌面 GUI** | MCP 面板 **+** → Preset / Custom 表单 |
+
 ```
 cc-switch mcp list                           # 列出
 cc-switch --app codex mcp list               # Codex 的 MCP
-cc-switch mcp add                            # 交互式添加
-cc-switch mcp edit <id>                      # 编辑
+cc-switch mcp add                            # 外部编辑器添加（见上表）
+cc-switch mcp edit <id>                      # 外部编辑器编辑
 cc-switch mcp delete <id>                    # 删除
 cc-switch mcp enable <id> --app claude       # 为指定应用启用
 cc-switch mcp disable <id> --app claude      # 为指定应用禁用
@@ -341,6 +364,8 @@ cc-switch mcp sync                           # 同步到 live 配置文件
 cc-switch mcp import --app claude            # 从 live 配置导入
 cc-switch mcp validate <command>             # 验证命令是否在 PATH 中
 ```
+
+不想用 vim：`EDITOR=nano cc-switch mcp add`，或 `EDITOR="code --wait" cc-switch mcp add`。
 
 ---
 

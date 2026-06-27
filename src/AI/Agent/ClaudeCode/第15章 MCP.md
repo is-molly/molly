@@ -65,9 +65,9 @@ claude --strict-mcp-config --mcp-config ./mcp.json  # 仅使用指定配置
 Claude Code 的 MCP OAuth 遵循 **RFC 9728**（Protected Resource Metadata）标准，自动发现授权服务器。v2.1.186+ 支持命令行认证：
 
 ```shell
-claude mcp login sentry          # 交互 OAuth
-claude mcp login sentry --no-browser  # SSH 环境打印 URL
-claude mcp logout sentry
+claude mcp login github          # 交互 OAuth（Remote MCP 示例）
+claude mcp login github --no-browser  # SSH 环境打印 URL
+claude mcp logout github
 ```
 
 ## 安全特性

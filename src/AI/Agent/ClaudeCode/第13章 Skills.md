@@ -128,7 +128,7 @@ Claude 启动时按 **2% context 预算**（默认）列出可用 Skills 供模�
 
 环境变量 `SLASH_COMMAND_TOOL_CHAR_BUDGET` 可设固定字符预算。用 `/skills` 查看已加载 Skills 及描述占用。
 
-> Skills 专书：[01 管理架构](/AI/Skills/01-管理架构与快速上手.html) → [02 选型](/AI/Skills/02-选型与组合方案.html) → [03 基础](/AI/Skills/03-基础与生态概览.html)。
+> Skills 专书：[02 管理架构](/AI/Skills/02-管理架构与快速上手.html) → [03 选型](/AI/Skills/03-选型与组合方案.html) → [01 基础](/AI/Skills/01-基础与生态概览.html)。
 
 ## 何时被调用
 

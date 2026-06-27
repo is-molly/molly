@@ -9,7 +9,7 @@ date: 2026-06-27
 
 "元 Skill"是指那些用来管理、发现和创建其他 Skill 的 Skill。它们是 Skill 生态的基石工具。
 
-## 6.1 skill-creator（Anthropic 官方 Plugin）
+## skill-creator（Anthropic 官方 Plugin）
 
 ### 项目概述
 
@@ -31,10 +31,10 @@ date: 2026-06-27
 
 ### 安装
 
-> 多路径规则 → [05 安装手册 § 5.0](05-安装方式参考手册.md)。**无 npx 路径**；与 [6.3 valorisa](#63-valorisa-claude-skill-creator社区增强版) **二选一**，不要两个 Creator Plugin 都装。
+> 多路径规则 → [05 · 多路径安装](05-安装方式参考手册.md#多路径安装怎么选装完怎么验)。**无 npx 路径**；与 [valorisa Skill Creator](#valorisa-claude-skill-creator社区增强版) **二选一**，不要两个 Creator Plugin 都装。
 
 - **推荐（官方 skill-creator）**：日常建 Skill、Eval/Benchmark；Claude Code `/plugin` 唯一路径。
-- **备选（valorisa 社区版）**：发布给他人前做安全审查时用 → [6.3](#63-valorisa-claude-skill-creator社区增强版)。
+- **备选（valorisa 社区版）**：发布给他人前做安全审查时用 → [valorisa Skill Creator](#valorisa-claude-skill-creator社区增强版)。
 
 ```
 # 推荐 — 官方 Market
@@ -89,7 +89,7 @@ skill-creator 生成的 Skill 是**起点**，不是终点：
 - 在实际使用中收集失败点，更新 Gotchas 区
 - 迭代 3-5 次后成为成熟 Skill
 
-## 6.2 `npx skills` — Vercel Labs 的通用 Skill 包管理器
+## `npx skills` — Vercel Labs 的通用 Skill 包管理器
 
 ### 项目概述
 
@@ -100,7 +100,7 @@ skill-creator 生成的 Skill 是**起点**，不是终点：
 
 ### 推荐工作流（装单体 Skill）
 
-> 多路径规则 → [05 § 5.0](05-安装方式参考手册.md)
+> 多路径规则 → [05 · 多路径安装](05-安装方式参考手册.md#多路径安装怎么选装完怎么验)
 
 - **推荐（CC Switch 用户）**：`cc-switch skills install owner/repo:<目录名>` → `skills sync`（**无** `--skill`）。
 - **备选（终端 / 无 CC Switch）**：`npx skills add … -g -a claude-code -y`。
@@ -151,7 +151,7 @@ npx skills init my-skill
 npx skills use owner/repo@skill   # 临时用，不写入磁盘
 ```
 
-## 6.3 valorisa/Claude-Skill-Creator（社区增强版）
+## valorisa/Claude-Skill-Creator（社区增强版）
 
 ### 项目概述
 
@@ -170,7 +170,7 @@ npx skills use owner/repo@skill   # 临时用，不写入磁盘
 
 ### 安装
 
-> 多路径规则 → [05 安装手册 § 5.0](05-安装方式参考手册.md)。与 [6.1 官方 skill-creator](#61-skill-creatoranthropic-官方-plugin) **二选一**。
+> 多路径规则 → [05 · 多路径安装](05-安装方式参考手册.md#多路径安装怎么选装完怎么验)。与 [skill-creator](#skill-creatoranthropic-官方-plugin) **二选一**。
 
 - **推荐（官方 skill-creator）**：日常开发、Eval/Benchmark、与 Claude Code 同步更新。
 - **备选（本 Plugin）**：发布 Skill 给他人前，用 llm-council 做安全审查。
@@ -190,7 +190,7 @@ npx skills use owner/repo@skill   # 临时用，不写入磁盘
 - 日常开发选**官方 skill-creator**——集成 Eval/Benchmark，与 Claude Code 同步更新
 - 发布 Skill 给他人使用前，用**社区版**做一次安全审查
 
-## 6.4 agentskills 规范验证工具
+## agentskills 规范验证工具
 
 [agentskills/agentskills](https://github.com/agentskills/agentskills) 仓库提供开放标准的验证 CLI，可检查 Skill 是否符合 [agentskills.io](https://agentskills.io/specification) 规范（name/description 必填、目录结构等）。
 

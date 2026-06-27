@@ -13,7 +13,7 @@ Anthropic 内部有数百个 Skills 在活跃使用中。经过系统梳理后�
 
 本章内容基于这篇博客的完整原文。
 
-## 4.1 Anthropic 的 9 类 Skills 分类体系
+## Anthropic 的 9 类 Skills 分类体系
 
 ### 类型 1：Library & API Reference（库与 API 参考）
 
@@ -168,7 +168,7 @@ Anthropic 内部的真实案例：
 | Data Fetching & Analysis | ⭐⭐ | 数据工程师 |
 | Business Process Automation | ⭐⭐ | TPM/EM |
 
-## 4.2 Anthropic 的 9 条 Skill 编写工程技巧
+## Anthropic 的 9 条 Skill 编写工程技巧
 
 以下是 Anthropic Claude Code 团队在内部编写数百个 Skill 后总结的最佳实践。
 
@@ -269,7 +269,7 @@ Skills 可以包含 Hook，这些 Hook 只在 Skill 被调用时激活，且只�
 
 如果你需要 Agent 提供结构化的选择题，可以让 Claude 使用 `AskUserQuestion` 工具（Claude Code 专有，其他平台可能不可用）。
 
-## 4.3 融会贯通：一个高质量 Skill 的标准
+## 融会贯通：一个高质量 Skill 的标准
 
 综合以上 9 类分类和 9 条技巧，一个高质量的 Skill 应该具备以下特征：
 

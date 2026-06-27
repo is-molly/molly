@@ -6,11 +6,11 @@ date: 2026-06-27
 # 领域 Skill · 前端与 UI
 
 > **章节类型：领域 Skill**（垂直场景：界面与体验）。与工作流方法论章（07/08）不同——这里讲的是「把 UI 做好」的能力包，不是整条开发流水线。  
-> **五方案组合 playbook** → [02 本章导航](02-选型与组合方案.md#本章导航)；**只装一个前端 Skill** → [§ 9.6](#_9-6-standalone)。
+> **五方案组合 playbook** → [03 本章导航](03-选型与组合方案.md#本章导航)；**只装一个前端 Skill** → [单独使用](#_9-5-standalone)。
 
 前端设计是 Skills 生态中安装量最大的类别。五个安装量最高的 Skill 中有四个是前端相关的。本章覆盖最重要的四个。
 
-## 9.1 frontend-design（Anthropic 官方）
+## frontend-design（Anthropic 官方）
 
 ### 项目概述
 
@@ -72,7 +72,7 @@ frontend-design 是对"AI slop"的最直接回应。
 
 ### 安装
 
-> 多路径规则 → [05 安装手册 § 5.0](05-安装方式参考手册.md)
+> 多路径规则 → [05 · 多路径安装](05-安装方式参考手册.md#多路径安装怎么选装完怎么验)
 
 - **推荐（CC Switch 用户）**：`install owner/repo:目录名` + `sync`（**无** `--skill`；首次须 `repos add`）。
 - **备选（终端 / 无 CC Switch）**：`npx skills add --skill …` 装到 Claude Code 全局。
@@ -93,7 +93,7 @@ npx skills add anthropics/skills --skill frontend-design -g -a claude-code -y
 /doctor
 ```
 
-## 9.2 UI/UX Pro Max — 全套设计基础设施
+## UI/UX Pro Max — 全套设计基础设施
 
 ### 项目概述
 
@@ -212,7 +212,7 @@ agent, augment, droid, warp
 
 ### 安装
 
-> 多路径怎么选 → [05 安装手册 § 5.0](05-安装方式参考手册.md)
+> 多路径怎么选 → [05 · 多路径安装](05-安装方式参考手册.md#多路径安装怎么选装完怎么验)
 
 - **推荐 A（`uipro init`）**：上游标准流程，写入 `.claude/skills/ui-ux-pro-max/` 及数据脚本、Python 引擎；Claude Code 本地开发首选。
 - **备选 B（Claude Code Plugin）**：习惯所有能力走 `/plugin`、要 `/plugin update` 一键更新时用。
@@ -261,7 +261,7 @@ npx skills add nextlevelbuilder/ui-ux-pro-max-skill --skill ui-ux-pro-max -g -a 
 
 > **描述预算提醒**：UI/UX Pro Max 含 7 个子 Skill，Addy Osmani 含 24 个——不建议全部安装。按项目需求选 2-3 个即可，否则 description budget 会被打爆。用 `/skills` 禁用不需要的子 Skill。
 
-## 9.3 Vercel Labs Agent Skills — 工程性能优化
+## Vercel Labs Agent Skills — 工程性能优化
 
 ### 项目概述
 
@@ -369,7 +369,7 @@ JS 语法级别的微小优化。
 
 ### 安装
 
-> 多路径规则 → [05 安装手册 § 5.0](05-安装方式参考手册.md)。仓库共 **9 个** Skill，**按需装 2–3 个**，不要 `--all`。
+> 多路径规则 → [05 · 多路径安装](05-安装方式参考手册.md#多路径安装怎么选装完怎么验)。仓库共 **9 个** Skill，**按需装 2–3 个**，不要 `--all`。
 
 - **推荐（React/Next 最小 trio）**：下面三条 `npx` 或 CC Switch 等价命令；CC Switch 用户每条 `install` 后统一 `sync`。
 - **备选**：React Native 等其它栈 → 先 `--list` 再按需 `--skill`。
@@ -401,7 +401,7 @@ npx skills add vercel-labs/agent-skills --skill react-native-skills -g -a claude
 /doctor
 ```
 
-## 9.4 addyosmani/agent-skills — 完整的 SDLC Skill 集
+## addyosmani/agent-skills — 完整的 SDLC Skill 集
 
 - **仓库**：[addyosmani/agent-skills](https://github.com/addyosmani/agent-skills)
 - **作者**：Addy Osmani（Google Chrome 工程总监）
@@ -439,7 +439,7 @@ npx skills add vercel-labs/agent-skills --skill react-native-skills -g -a claude
 
 ### 安装
 
-> 多路径规则 → [05 安装手册 § 5.0](05-安装方式参考手册.md)。仓库 **24 个** Skill，**不要** `--all`。
+> 多路径规则 → [05 · 多路径安装](05-安装方式参考手册.md#多路径安装怎么选装完怎么验)。仓库 **24 个** Skill，**不要** `--all`。
 
 - **推荐（前端/UI 只装 1 个）**：`frontend-ui-engineering`；CC Switch 或 npx **二选一**。
 - **备选**：按需追加 `performance-optimization`、`code-review-and-quality` 等 → 先 `--list`。
@@ -467,11 +467,11 @@ npx skills add addyosmani/agent-skills --skill performance-optimization -g -a cl
 
 ---
 
-<a id="_9-6-standalone"></a>
+<a id="_9-5-standalone"></a>
 
-## 9.6 不经 02 方案单独使用
+## 不经 03 方案单独使用
 
-> 只装 **一个** 前端 Skill、不走 [02 五方案组合](02-选型与组合方案.md#本章导航) 时，用本节起手式。组合 playbook（Superpowers × frontend-design 等）仍在 02。
+> 只装 **一个** 前端 Skill、不走 [03 五方案组合](03-选型与组合方案.md#本章导航) 时，用本节起手式。组合 playbook（Superpowers × frontend-design 等）仍在 03。
 
 ### frontend-design 单独用
 
@@ -502,7 +502,7 @@ Claude: [调性 + token 计划 …]
 Claude: [SettingsPage.tsx …]
 ```
 
-深潜 → [§ 9.1](#91-frontend-designanthropic-官方)。与 Superpowers 组合 → [02 方案 A 工作流](02-选型与组合方案.md#方案-a-工作流)。
+深潜 → [frontend-design](#frontend-designanthropic-官方)。与 Superpowers 组合 → [03 方案 A 工作流](03-选型与组合方案.md#方案-a-工作流)。
 
 ### ui-ux-pro-max 单独用
 
@@ -515,9 +515,9 @@ Claude: [SettingsPage.tsx …]
 > Use ui-ux-pro-max workflow: search styles/colors/typography, persist design-system/MASTER.md.
 ```
 
-README 五步（search → reasoning → domain → stack → design system）见 [02 方案 C 示例 B/C](02-选型与组合方案.md#方案-c-工作流)。跨会话读 MASTER → [02 示例 D](02-选型与组合方案.md#方案-c-工作流)。
+README 五步（search → reasoning → domain → stack → design system）见 [03 方案 C 示例 B/C](03-选型与组合方案.md#方案-c-工作流)。跨会话读 MASTER → [02 示例 D](03-选型与组合方案.md#方案-c-工作流)。
 
-**不要**一次装 Pro Max 全部 7 子 Skill；只装主 `ui-ux-pro-max`（见 § 9.2 安装）。
+**不要**一次装 Pro Max 全部 7 子 Skill；只装主 `ui-ux-pro-max`（见 UI/UX Pro Max 安装）。
 
 ### Vercel / Addy 单体
 
@@ -527,7 +527,7 @@ README 五步（search → reasoning → domain → stack → design system）�
 | `web-design-guidelines` | 「Audit this page against web-design-guidelines」 |
 | `frontend-ui-engineering` | 「Apply frontend-ui-engineering to this layout refactor」 |
 
-安装 → 各节 § 9.3 / § 9.4。组合见 [02 方案 C](02-选型与组合方案.md#方案-c-工作流)。
+安装 → 各节 Vercel / addyosmani 各节。组合见 [03 方案 C](03-选型与组合方案.md#方案-c-工作流)。
 
 ---
 
