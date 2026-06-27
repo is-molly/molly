@@ -3,6 +3,7 @@ import { sidebar } from "vuepress-theme-hope";
 export default sidebar({
   "/AI/Agent/OpenClaw": "structure",
   "/AI/Agent/ClaudeCode": "structure",
+  "/AI/Skills": "structure",
   "/BackEnd/Java/JVM": "structure",
   "/BackEnd/Java/Concurrent": "structure",
   "/BackEnd/Golang/Base": "structure",

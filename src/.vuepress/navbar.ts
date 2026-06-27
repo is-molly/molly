@@ -11,6 +11,7 @@ export default navbar([
         children: [
           { text: "OpenClaw", icon: "/assets/icon/openclaw.svg", link: "/AI/Agent/OpenClaw/" },
           { text: "ClaudeCode", icon: "/assets/icon/claudecode.svg", link: "/AI/Agent/ClaudeCode/" },
+          { text: "Skills", icon: "/assets/icon/skills.svg", link: "/AI/Skills/" },
         ],
       }
     ],
