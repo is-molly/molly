@@ -205,6 +205,48 @@ Opus 4.7、Opus 4.6、Sonnet 4.6 均支持 1M token 上下文窗口。
 - Opus 在 Max/Team/Enterprise 计划中**自动升级为 1M 上下文**，无需额外配置
 - 如需禁用 1M 上下文：设置 `CLAUDE_CODE_DISABLE_1M_CONTEXT=1`
 
+### 第三方 Provider 与 `[1m]` 后缀
+
+接 **DeepSeek、智谱 GLM** 等 Anthropic 兼容端点时，不能只填 `deepseek-v4-pro`、`glm-5.1`——Claude Code 对非 `api.anthropic.com` 的地址**不会**自动识别 1M 能力，`/context` 和 AutoCompact 会按 **200K** 算。上下文用到 ~187K 就可能 compact，而后端其实还有大量余量（[claude-code#46416](https://github.com/anthropics/claude-code/issues/46416)）。
+
+**`[1m]` 是 Claude Code CLI 本地约定**，不是上游 API 的模型 ID：
+
+| 阶段 | 行为 |
+|------|------|
+| 本地 | 看到 `deepseek-v4-pro[1m]` → `/context`、compact 阈值按 **1M** |
+| 发请求 | **`[1m]` 会被剥掉**，上游收到 `deepseek-v4-pro` |
+
+用法与官方别名相同，写在**环境变量或 cc-switch 模型映射**里即可：
+
+```
+/model deepseek-v4-pro[1m]    # 会话内（若 Gateway 暴露了该名）
+```
+
+更常见是在 Provider / `settings.json` 的 `env` 里写（见 [附录 C · 1M 与 cc-switch](附录C%20衍生工具简介.md#1m-上下文与-1m-后缀cc-switch-必看)）：
+
+```json
+{
+  "env": {
+    "ANTHROPIC_MODEL": "deepseek-v4-pro[1m]",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-v4-pro[1m]",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-v4-pro[1m]",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-v4-flash"
+  }
+}
+```
+
+**智谱** 开 1M 时，模型名同样加 `[1m]`（如 `glm-5.2[1m]`、`glm-5.1[1m]`，以你实际订阅的型号为准），并建议同时设：
+
+```json
+"CLAUDE_CODE_AUTO_COMPACT_WINDOW": "1000000"
+```
+
+（[智谱 Claude Code 文档](https://docs.bigmodel.cn/cn/guide/develop/claude) 要求两项一起配。）
+
+**验证：** 切换 Provider 后 `claude` → `/context`，应显示约 **1M** 总窗口，而不是 200K。若加了 `[1m]` 仍报模型不存在，先升级 Claude Code 再试。
+
+**Haiku / Flash 槽位：** 一般**不加** `[1m]`（轻量模型、短上下文即可）。DeepSeek 官方示例里 Haiku 对应 `deepseek-v4-flash` 无后缀。
+
 ## Fast Mode
 
 Fast Mode 是 Opus 4.6 的一项研究预览特性，提供**显著更快**的输出 token 生成速度。通过 `/model` 选择器中的 Fast 选项启用。适用于延迟敏感、对 Token 成本不太在意的场景。

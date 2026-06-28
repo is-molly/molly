@@ -40,6 +40,7 @@ date: 2026-06-26
 | cc-session-viewer | [github.com/ravikanchikare/cc-session-viewer](https://github.com/ravikanchikare/cc-session-viewer) |
 | cc-read | [github.com/yurukusa/cc-read](https://github.com/yurukusa/cc-read) |
 | cc-toolkit（含 cc-read 等） | [yurukusa.github.io/cc-toolkit](https://yurukusa.github.io/cc-toolkit/) |
+| claude-webcache（WebFetch 持久缓存 Plugin） | [github.com/theYahia/claude-webcache](https://github.com/theYahia/claude-webcache) |
 
 ## 社区文章与案例
 

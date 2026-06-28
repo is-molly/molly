@@ -80,6 +80,8 @@ Hooks 的 `PreCompact` 事件支持 `manual` 和 `auto` 两种 matcher，可以�
 
 Opus 4.7、Opus 4.6、Sonnet 4.6 支持 1M token 上下文（详见第 4 章）。大上下文意味着更少的 Compact 需求和更长的自主任务执行能力。
 
+接 **DeepSeek / 智谱** 等第三方 Provider 时，须在模型名加 **`[1m]`** 并在智谱侧设 `CLAUDE_CODE_AUTO_COMPACT_WINDOW`，否则 `/context` 仍按 200K 算——见 [第 4 章 · 第三方 [1m]](第4章%20模型、Effort与AdaptiveThinking.md#第三方-provider-与-1m-后缀)。
+
 ### `/context` —— 查看上下文使用情况
 
 ```

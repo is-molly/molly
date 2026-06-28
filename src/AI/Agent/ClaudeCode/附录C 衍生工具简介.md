@@ -12,8 +12,9 @@ date: 2026-06-26
 | **cc-switch** | 管 Provider、MCP、Skills、Prompts | 换 API、同步 MCP、装 Skill |
 | **cc-session-viewer** | 浏览、对比、复制会话 JSONL | 复盘某次对话、对比两次 prompt、导出 transcript |
 | **cc-read** | 统计会话里 **Read** 工具读了哪些文件 | 看 Agent 反复读哪些文件、哪个项目读文件最多 |
+| **claude-webcache** | **WebFetch / WebSearch** 结果持久化到本地 SQLite | 跨会话复用文档页、少重复抓官网/API 文档 |
 
-下面按工具分节写安装与用法。cc-switch 篇幅最长，因为 Provider / MCP 字段多；后两者命令少，但 UI 与数据路径需要说清。
+下面按工具分节写安装与用法。cc-switch 篇幅最长，因为 Provider / MCP 字段多；后三者命令少或走 Plugin 安装，但数据路径与 Hook 行为需要说清。
 
 ---
 
@@ -160,7 +161,7 @@ API 端点地址。对于提供 Anthropic 兼容端点的服务商（如 DeepSee
 | Sonnet Model | 对应 Sonnet 的日常编码模型 |
 | Opus Model | 对应 Opus 的复杂任务模型 |
 
-每个槽位填实际的上游模型名（如 `deepseek-v4-pro`、`deepseek-v4-flash`、`glm-5.2`、`glm-5.1`）。不需要填 Claude 的模型名，cc-switch 会自动处理映射。
+每个槽位填实际上游模型名（如 `deepseek-v4-pro[1m]`、`glm-5.2[1m]`）。**支持 1M 的 Pro/Sonnet/Opus 槽位要加 `[1m]` 后缀**，否则 Claude Code 仍按 200K 预算 compact（详见 [1M 与 cc-switch](#1m-上下文与-1m-后缀cc-switch-必看)）。Haiku / Flash 槽位通常不加。不需要填 Claude 官方模型名。
 
 如果上游服务商只有一个模型，可以在 `Default Model` 填一个，其余留空。
 
@@ -213,6 +214,56 @@ claude                                  # 启动 Claude Code
 
 ---
 
+<a id="1m-上下文与-1m-后缀cc-switch-必看"></a>
+
+## 1M 上下文与 `[1m]` 后缀（cc-switch 必看）
+
+DeepSeek V4 Pro、智谱 GLM-5.x 等上游**实际支持 1M token**，但 Claude Code 连第三方 `ANTHROPIC_BASE_URL` 时默认只给 **200K** 的 `/context` 和 compact 预算。要在客户端打开 1M，必须在 cc-switch 写的模型名里加 **`[1m]`**（CLI 本地解析，**发 API 前会去掉**，上游仍收到 `deepseek-v4-pro` 这类裸名）。
+
+| 现象 | 原因 |
+|------|------|
+| `/context` 显示 200K | Provider 模型映射未加 `[1m]` |
+| ~187K 就 AutoCompact | 同上，按 200K 窗口在压 |
+| 加了 `[1m]` 报模型不存在 | Claude Code 版本过旧，升级后再试 |
+
+### cc-switch 里怎么填
+
+**DeepSeek（Pro / Sonnet / Opus / Default 槽位）**
+
+| 角色 | 填写内容 |
+|------|----------|
+| Default / Reasoning / Sonnet / Opus | `deepseek-v4-pro[1m]` |
+| Haiku | `deepseek-v4-flash`（无 `[1m]`） |
+
+**智谱 GLM（你用的 5.1 或文档里的 5.2，按订阅型号选）**
+
+| 角色 | 填写内容 |
+|------|----------|
+| Default / Reasoning / Sonnet / Opus | `glm-5.1[1m]` 或 `glm-5.2[1m]` |
+| Haiku | `glm-5.1`（无 `[1m]`） |
+
+智谱还建议在 env 里加（可用 **common config** 或 Provider 内 env）：
+
+```shell
+cc-switch --app claude config common set --snippet \
+  '{"env":{"CLAUDE_CODE_AUTO_COMPACT_WINDOW":"1000000"}}'
+```
+
+或在 `cc-switch provider add` **Step 12 Attach Common Config** 选 `Y`（若 common 里已有上项）。
+
+已有 Provider 漏配时：
+
+```shell
+cc-switch provider edit <id>    # 改模型映射，Pro/Sonnet/Opus 加 [1m]
+cc-switch provider switch <id>
+claude
+/context                        # 应约 1M，不是 200K
+```
+
+概念说明见 [第 4 章 · 第三方 Provider 与 [1m]](第4章%20模型、Effort与AdaptiveThinking.md#第三方-provider-与-1m-后缀)。
+
+---
+
 ## 接入 DeepSeek
 
 DeepSeek 提供了 Anthropic 兼容端点，可以直接接收 Anthropic Messages 格式的请求，**无需格式转换**。
@@ -238,15 +289,15 @@ cc-switch provider add
 **Step 7** Base URL → `https://api.deepseek.com/anthropic`
 **Step 8** Configure model names? → **Yes**
 
-模型映射：
+模型映射（**Pro 系加 `[1m]`，与 [DeepSeek 官方 Claude Code 文档](https://api-docs.deepseek.com/quick_start/agent_integrations/claude_code) 一致）：
 
 | 角色 | 填写内容 | 说明 |
 |------|----------|------|
-| Default Model | `deepseek-v4-pro` | 默认使用 V4-Pro |
-| Reasoning Model (Thinking) | `deepseek-v4-pro` | 深度推理也用 V4-Pro |
-| Haiku Model | `deepseek-v4-flash` | 快速轻量任务用 Flash |
-| Sonnet Model | `deepseek-v4-pro` | 日常编码用 Pro |
-| Opus Model | `deepseek-v4-pro` | 复杂任务用 Pro |
+| Default Model | `deepseek-v4-pro[1m]` | 1M 上下文预算 |
+| Reasoning Model (Thinking) | `deepseek-v4-pro[1m]` | 同上 |
+| Haiku Model | `deepseek-v4-flash` | 轻量，不加 `[1m]` |
+| Sonnet Model | `deepseek-v4-pro[1m]` | 日常编码 |
+| Opus Model | `deepseek-v4-pro[1m]` | 复杂任务 |
 
 **Step 9** Hide AI Attribution → `No`
 **Step 10** Configure optional fields? → `No`
@@ -261,6 +312,7 @@ cc-switch provider list
 cc-switch provider switch <id>         # 切换
 cc-switch provider stream-check <id>   # 测试连接
 claude                                  # 启动
+/context                                # 确认约 1M，不是 200K
 ```
 
 ### 手动配置（不用 cc-switch 的备选方案）
@@ -272,7 +324,10 @@ claude                                  # 启动
   "env": {
     "ANTHROPIC_BASE_URL": "https://api.deepseek.com/anthropic",
     "ANTHROPIC_API_KEY": "sk-xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx",
-    "ANTHROPIC_MODEL": "claude-sonnet-4-20250514"
+    "ANTHROPIC_MODEL": "deepseek-v4-pro[1m]",
+    "ANTHROPIC_DEFAULT_OPUS_MODEL": "deepseek-v4-pro[1m]",
+    "ANTHROPIC_DEFAULT_SONNET_MODEL": "deepseek-v4-pro[1m]",
+    "ANTHROPIC_DEFAULT_HAIKU_MODEL": "deepseek-v4-flash"
   }
 }
 ```
@@ -308,21 +363,36 @@ cc-switch provider add
 **Step 7** Base URL → `https://open.bigmodel.cn/api/anthropic`
 **Step 8** Configure model names? → **Yes**
 
-模型映射：
+模型映射（**Sonnet/Opus 加 `[1m]`**；下表以 **glm-5.1** 为例，若用 5.2 把型号改成 `glm-5.2[1m]`）：
 
 | 角色 | 填写内容 | 说明 |
 |------|----------|------|
-| Default Model | `glm-5.2` | 最新旗舰，744B MoE，1M 上下文 |
-| Reasoning Model (Thinking) | `glm-5.2` | 深度推理 |
-| Haiku Model | `glm-5.1` | 快速轻量任务 |
-| Sonnet Model | `glm-5.2` | 日常编码 |
-| Opus Model | `glm-5.2` | 复杂任务 |
+| Default Model | `glm-5.1[1m]` | 1M 上下文（智谱 [文档](https://docs.bigmodel.cn/cn/guide/develop/claude)） |
+| Reasoning Model (Thinking) | `glm-5.1[1m]` | 深度推理 |
+| Haiku Model | `glm-5.1` | 轻量，不加 `[1m]` |
+| Sonnet Model | `glm-5.1[1m]` | 日常编码 |
+| Opus Model | `glm-5.1[1m]` | 复杂任务 |
 
 **Step 9** Hide AI Attribution → `No`
 **Step 10** Configure optional fields? → `No`
 **Step 11** API Format → **`Anthropic Messages (Native)`**（智谱有 Anthropic 兼容端点，直连无需代理）
-**Step 12** Attach Common Config → `n`
+**Step 12** Attach Common Config → 若 common 里**已有** `CLAUDE_CODE_AUTO_COMPACT_WINDOW` 选 **`Y`**，否则选 **`N`**（下一步补写）
 **Step 13** → 确认创建
+
+### 智谱 1M 必做（common config）
+
+模型映射里的 `[1m]` 只解决 Claude Code 本地 `/context` 预算；智谱官方还要求客户端把 compact 窗口设到 1M。在 common config 或该 Provider 的 `env` 中确保有：
+
+```json
+"CLAUDE_CODE_AUTO_COMPACT_WINDOW": "1000000"
+```
+
+一次性写入 common config：
+
+```shell
+cc-switch --app claude config common set --snippet \
+  '{"env":{"CLAUDE_CODE_AUTO_COMPACT_WINDOW":"1000000","API_TIMEOUT_MS":"3000000"}}'
+```
 
 ### 切换与验证
 
@@ -331,6 +401,7 @@ cc-switch provider list
 cc-switch provider switch <id>
 cc-switch provider stream-check <id>
 claude
+/context    # 应约 1M
 ```
 
 ### 关于 Quota 查询报错
@@ -540,6 +611,10 @@ cc-switch --app claude env check
 **智谱 GLM 切换后 Quota 查询报错 `当前用户不存在coding plan`？**
 
 这是正常现象。cc-switch 的额度查询走智谱的 `/api/monitor/usage/quota/limit` 端点，该端点仅对 Coding Plan 订阅用户开放。普通按量计费 token 用户会报这个错，但模型调用走的是 `/api/anthropic` 端点，不受影响。详见[接入智谱 GLM](#接入智谱-glm) 章节。
+
+**DeepSeek / 智谱已接好，但 `/context` 仍是 200K？**
+
+Provider 模型映射里 Pro/Sonnet/Opus **缺 `[1m]` 后缀**。按 [1M 与 cc-switch](#1m-上下文与-1m-后缀cc-switch-必看) 改 `cc-switch provider edit <id>`，智谱另加 `CLAUDE_CODE_AUTO_COMPACT_WINDOW=1000000`，再 `provider switch` 后新开会话验证。
 
 ---
 
@@ -785,4 +860,99 @@ cc-read 不读 Provider、不读 MCP 配置，只读会话 jsonl。
 
 ---
 
-> **资料来源**：[cc-switch CLI GitHub](https://github.com/SaladDay/cc-switch-cli)、[cc-switch CLI README（中文）](https://github.com/SaladDay/cc-switch-cli/blob/main/README_ZH.md)、[cc-session-viewer](https://github.com/ravikanchikare/cc-session-viewer)（2026-06 clone 核对）、[cc-read](https://github.com/yurukusa/cc-read)（2026-06 clone 核对）
+## claude-webcache
+
+**项目**：[theYahia/claude-webcache](https://github.com/theYahia/claude-webcache) ｜ **npm**：`@theyahia/claude-webcache` ｜ **安装方式**：Claude Code **Plugin**（推荐）或 npm 全局 + 手动写 `settings.json`
+
+### 定位
+
+Claude Code 内置 **WebFetch** / **WebSearch** 有约 **15 分钟、单会话** 的内存缓存。新开一个 `claude` 会话，同一文档 URL 往往会再抓一遍。
+
+**claude-webcache** 用 Hook + 本地 **SQLite**（`~/.webcache/cache.db`）把抓取结果**跨会话持久化**。v0.5+ 在 **PreToolUse** 里先查缓存，命中则**跳过真实 WebFetch**；**PostToolUse** 把新结果写入库。默认 TTL **不限**（可用环境变量设过期）。
+
+和 cc-switch 的分工：cc-switch 管**模型走哪家 API**；webcache 管**网页抓取结果存哪**。接 DeepSeek、智谱 GLM 等第三方 Provider **完全兼容**——它不经过 `ANTHROPIC_BASE_URL`，也不改 cc-switch 写的 Provider 配置。
+
+### 能省什么、不能省什么
+
+| 能省 | 不能省 |
+|------|--------|
+| 同 URL + 同 prompt **跨会话**不再重复 HTTP 抓取 | **Read / Grep / Bash / MCP** 占用的模型输入 token |
+| 命中缓存时跳过 WebFetch 调用（省网络、省一轮 tool 往返） | 缓存正文**仍作为 tool 结果进上下文**（大页面照样占 token） |
+| WebSearch 结果单独命名空间，默认 **6 小时** TTL | 几乎不写代码、很少 WebFetch 的任务 **收益接近零** |
+
+缓存键 = `namespace + 规范化 URL + prompt`。同一文档 URL，**换一句 prompt 可能命不中**。
+
+### 安装（Plugin，推荐）
+
+在 Claude Code 里执行（CLI / Desktop / VS Code 扩展命令相同）：
+
+```shell
+claude plugin marketplace add theYahia/claude-webcache
+claude plugin install claude-webcache@theyahia
+```
+
+装好后**无需再配 Hook**——Plugin 自带 MCP Server 与 Pre/PostToolUse。若 `/plugin install` TUI 报第三方源不支持（[Claude Code #41653](https://github.com/anthropics/claude-code/issues/41653)），用上面 CLI 命令即可。
+
+**不要用 cc-switch 管这个**——cc-switch 同步的是 `mcpServers` / Provider；Plugin 走 `/plugin` 生态，二者独立。
+
+备选：npm 全局安装后手改 `~/.claude/settings.json` 注册 MCP 与 SessionStart Hook，见上游 [README](https://github.com/theYahia/claude-webcache#option-2--npm-global)（需 Node **22.5+**，用内置 `node:sqlite`）。
+
+### 工作机制（简图）
+
+```
+WebFetch 请求
+    → PreToolUse：查 ~/.webcache/cache.db
+        命中 → 直接返回缓存，跳过网络
+        未命中 → 正常 WebFetch
+    → PostToolUse：把结果写入 SQLite
+```
+
+SessionStart 时 Hook 可能注入一行统计，例如 `webcache 142 pages cached, 87% hit rate`（缓存为空则不显示）。
+
+### 常用环境变量
+
+| 变量 | 默认 | 作用 |
+|------|------|------|
+| `WEBCACHE_NAMESPACE` | `""`（共享） | 按项目隔离缓存，如 `WEBCACHE_NAMESPACE=myapp claude` |
+| `WEBCACHE_TTL_DAYS` | 不限 | 全局过期天数；`0` 或未设 = 不限 |
+| `WEBCACHE_DOMAIN_TTL` | 无 | JSON 按域名 TTL，如 `{"news.com":1,"arxiv.org":0}` |
+| `WEBCACHE_MAX_OUTPUT_MB` | 10 | 超过则拒绝写入 |
+| `WEBCACHE_AUTOREAD` | 开 | 设 `0` 关闭 PreToolUse 自动读（仍会自动写） |
+| `WEBCACHE_SEARCH_TTL_HOURS` | 6 | WebSearch 缓存 TTL |
+
+### CLI 与 MCP
+
+npm 包带 `claude-webcache` 命令：`stats`、`list`、`invalidate`、`clear`、`dashboard`（默认 `http://localhost:37778`）等。
+
+MCP 工具包括 `cached_fetch`、`cached_search`、`cache_stats`、`cache_list`、`cache_invalidate`、`cache_clear` 等；一般靠 Hook 自动即可，不必手调。
+
+### 安全
+
+库文件在 `~/.webcache/cache.db`，**不要提交到 git**。写入前会对 URL 里明显的 `user:pass@`、常见 query token 做**展示级脱敏**；带鉴权的 URL 仍建议用 **Header** 传 token，少用 URL 内嵌密钥。`WEBCACHE_STRICT_REDACT=1` 会让缓存键也基于脱敏 URL——适合静态文档，**不适合**「同一 path、不同 token 返回不同用户数据」的接口。
+
+### 和 cc-read / cc-session-viewer 怎么配合
+
+| 问题 | 用谁 |
+|------|------|
+| 某次对话读了哪些仓库文件 | cc-session-viewer / cc-read |
+| 反复抓同一 API 文档、Release Notes | claude-webcache |
+| 换 DeepSeek / 智谱 Provider | cc-switch |
+| 看 WebFetch 命中率、清某 URL 缓存 | `claude-webcache stats` / `invalidate` |
+
+### 常见问题
+
+**装了插件，/context 还是很大**
+
+webcache 省的是**重复抓取**，不是把网页从上下文里删掉。第一次 Fetch 的大页面仍会进模型输入。
+
+**和 cc-switch 的 MCP 列表冲突吗**
+
+Plugin 注册的 MCP 与 cc-switch 同步的 MCP **并存**。会话里 tool schema 略增，通常远小于重复 WebFetch 的成本。
+
+**多项目共用一台机器**
+
+给不同仓库设不同 `WEBCACHE_NAMESPACE`，避免 A 项目的文档缓存被 B 项目误命中。
+
+---
+
+> **资料来源**：[cc-switch CLI GitHub](https://github.com/SaladDay/cc-switch-cli)、[cc-switch CLI README（中文）](https://github.com/SaladDay/cc-switch-cli/blob/main/README_ZH.md)、[cc-session-viewer](https://github.com/ravikanchikare/cc-session-viewer)（2026-06 clone 核对）、[cc-read](https://github.com/yurukusa/cc-read)（2026-06 clone 核对）、[claude-webcache README](https://github.com/theYahia/claude-webcache)（2026-06 核对）

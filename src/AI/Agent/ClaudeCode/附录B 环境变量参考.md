@@ -11,10 +11,10 @@ date: 2026-06-26
 |------|------|
 | `ANTHROPIC_API_KEY` | API Key 认证 |
 | `ANTHROPIC_BASE_URL` | API 端点地址（第三方代理/Gateway） |
-| `ANTHROPIC_MODEL` | 默认模型 |
-| `ANTHROPIC_DEFAULT_OPUS_MODEL` | `opus` 别名解析为的模型 |
-| `ANTHROPIC_DEFAULT_SONNET_MODEL` | `sonnet` 别名解析为的模型 |
-| `ANTHROPIC_DEFAULT_HAIKU_MODEL` | `haiku` 别名解析为的模型 |
+| `ANTHROPIC_MODEL` | 默认模型；第三方 1M 写 `模型名[1m]`（如 `deepseek-v4-pro[1m]`），CLI 发 API 前会去掉后缀 |
+| `ANTHROPIC_DEFAULT_OPUS_MODEL` | `opus` 别名解析为的模型（可带 `[1m]`） |
+| `ANTHROPIC_DEFAULT_SONNET_MODEL` | `sonnet` 别名解析为的模型（可带 `[1m]`） |
+| `ANTHROPIC_DEFAULT_HAIKU_MODEL` | `haiku` 别名解析为的模型（通常不带 `[1m]`） |
 | `ANTHROPIC_DEFAULT_FABLE_MODEL` | `fable` 别名解析为的模型 |
 | `CLAUDE_CODE_API_KEY_HELPER_TTL_MS` | API Key 刷新间隔（毫秒） |
 
@@ -32,6 +32,7 @@ date: 2026-06-26
 | 变量 | 说明 |
 |------|------|
 | `CLAUDE_CODE_DISABLE_1M_CONTEXT` | 禁用 1M 上下文 |
+| `CLAUDE_CODE_AUTO_COMPACT_WINDOW` | AutoCompact 触发阈值（token 数）；智谱 1M 常设 `1000000` |
 | `DISABLE_AUTOUPDATER` | 禁止自动更新 |
 
 ## 内存与行为
