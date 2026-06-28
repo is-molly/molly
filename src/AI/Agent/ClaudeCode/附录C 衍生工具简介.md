@@ -5,7 +5,15 @@ date: 2026-06-26
 
 # 附录C：衍生工具简介
 
-本章介绍对 Claude Code 开发者有帮助的衍生工具。重点展开 **cc-switch CLI**，它是日常开发中最实用的配置管理工具。
+本章介绍 Claude Code 日常开发里常用的**本地衍生工具**。和官方 CLI 的关系：它们不替代 `claude`，而是读写 `~/.claude/` 下的配置与会话数据。
+
+| 工具 | 干什么 | 典型场景 |
+|------|--------|----------|
+| **cc-switch** | 管 Provider、MCP、Skills、Prompts | 换 API、同步 MCP、装 Skill |
+| **cc-session-viewer** | 浏览、对比、复制会话 JSONL | 复盘某次对话、对比两次 prompt、导出 transcript |
+| **cc-read** | 统计会话里 **Read** 工具读了哪些文件 | 看 Agent 反复读哪些文件、哪个项目读文件最多 |
+
+下面按工具分节写安装与用法。cc-switch 篇幅最长，因为 Provider / MCP 字段多；后两者命令少，但 UI 与数据路径需要说清。
 
 ---
 
@@ -535,4 +543,246 @@ cc-switch --app claude env check
 
 ---
 
-> **资料来源**：[cc-switch CLI GitHub](https://github.com/SaladDay/cc-switch-cli)、[cc-switch CLI README（中文）](https://github.com/SaladDay/cc-switch-cli/blob/main/README_ZH.md)
+## cc-session-viewer
+
+**项目**：[ravikanchikare/cc-session-viewer](https://github.com/ravikanchikare/cc-session-viewer) ｜ **npm**：`cc-session-viewer` ｜ **编写语言**：TypeScript（Express 后端 + React/Vite 前端）
+
+### 定位
+
+Claude Code 把每次会话记成 `~/.claude/projects/<项目目录名>/<sessionId>.jsonl`，一行一条 JSON。终端里只能看到当前输出；想查「上次修 bug 时 Claude 读了哪些文件、调了几次 Bash」，得打开 jsonl 或用工具。
+
+**cc-session-viewer** 在本机起一个 Web 界面，把 jsonl 解析成可点的列表：按**用户每条 prompt** 分成 checkpoint，展开后能看到 tool 调用分组、每条消息的 token、模型、分支等。还支持**两个会话并排对比**、复制 transcript、导出 Markdown。
+
+和 cc-switch 的分工：cc-switch 管**下次**怎么连 API；cc-session-viewer 管**过去**会话里发生了什么。
+
+### 安装与启动
+
+```shell
+# 不安装，直接跑（推荐先试）
+npx cc-session-viewer
+
+# 全局安装
+npm install -g cc-session-viewer
+cc-session-viewer
+```
+
+启动后默认监听 **`http://localhost:4000`**（上游 `bin/cli.ts` 默认端口；旧 README 写 3333 的以本机行为为准）。会自动打开浏览器；若该端口已有实例在跑，会提示 *already running* 并只打开页面，不会重复起服务。
+
+常用参数：
+
+```shell
+cc-session-viewer --no-open              # 不自动开浏览器
+cc-session-viewer --port 4000            # 指定端口
+cc-session-viewer --roots ~/.claude      # 指定会话根（可多个，逗号分隔）
+cc-session-viewer --roots "/path/a/.claude,/path/b/.claude"
+cc-session-viewer --restart              # 杀掉占用端口的进程后重启
+```
+
+开发模式（改 UI 时用）：`npx tsx bin/cli.ts --dev --no-open` 起 API，另开终端 `npx vite`，前端在 `http://localhost:5173`，Vite 把 `/api` 代理到后端。
+
+### 数据从哪来
+
+| 路径 | 内容 |
+|------|------|
+| `~/.claude/projects/<projectId>/*.jsonl` | 主会话 |
+| `~/.claude/projects/<projectId>/<子目录>/subagents/*.jsonl` | Subagent 会话（界面可读；分支时会过滤 sidechain） |
+
+`<projectId>` 一般是工作目录路径编码后的目录名（例如 `-Users-you-code-myapp`）。侧边栏按 **Root → 项目 → 会话** 三级列出来。
+
+**多 Root：** 除默认 `~/.claude` 外，可在界面里添加别的 `.claude` 目录（例如第二台机器同步过来的副本）。配置写在 **`~/.claude-session-browser.json`**，字段是 `roots[]`（`path` + `label`）。CLI 的 `--roots` 会在启动时把这些路径注册进去。
+
+### 界面里能做什么
+
+**Checkpoint 列表**
+
+每条用户消息对应一行 checkpoint，显示：prompt 摘要、该轮 tool 次数、输入/输出 token、时间。点开一行展开完整消息流；连续的 tool_use 会收成一组（终端里一句「改了 3 个文件」背后可能是十几次 Read/Grep 再 Edit，这里能看清顺序）。
+
+**会话元数据**
+
+顶栏或侧栏会话节点上常见：模型名、git 分支、Claude Code 版本、消息总数、累计 token、最后活跃时间。
+
+**对比模式（Compare）**
+
+选两个会话，左右两栏独立滚动。用来对比：同一任务用 opus / haiku、两种 prompt、两次不同改法。每栏有自己的 metadata + checkpoint 列表。
+
+**复制 Transcript**
+
+可把整段会话、单轮、或对比选中部分复制成纯文本。复制规则（上游 AGENTS.md）：只保留 **User / Claude 正文**，不带 Bash/Read 等 tool 调用细节；子 agent 会话在「整段复制」时也会带上。适合贴进别的 LLM 或文档。
+
+**项目固定（Pin）**
+
+常开的项目可 pin 到侧边栏顶部。
+
+### 会改磁盘的操作（使用前确认）
+
+浏览、对比、复制**只读** jsonl。下面操作**会写** `~/.claude/projects/` 下的文件，和 Claude Code 内置 `/rewind`、`/fork` 同类，无法从 viewer 里撤销：
+
+| 操作 | 行为 |
+|------|------|
+| **Rename** | 在 jsonl **末尾追加**一条 `custom-title` 记录（与 Claude Code 命名规则一致） |
+| **Rewind** | 截断 jsonl：保留到某条 user 消息（含该条），**后面全部删除** |
+| **Branch** | 从某 checkpoint 复制出新 `.jsonl`，新 `sessionId`，带 `forkedFrom` 元数据 |
+| **Delete** | 删除整个 `<sessionId>.jsonl` |
+| **Move** | 把会话文件挪到同一 root 下另一个 project 目录 |
+
+Rewind / Branch 前应在 UI 里看清 checkpoint；重要会话先备份 `~/.claude/projects/` 对应目录。
+
+### 导出 Markdown（CLI 脚本）
+
+仓库自带导出脚本，不经过 Web UI，适合归档或给别的工具索引：
+
+```shell
+# 在 clone 后的仓库里，或 npm 包内通过 npm run
+npm run list-projects
+npm run list-projects -- -r ~/.claude
+
+npm run export-md -- --out ./export --project <projectId>
+npm run export-md -- --out ./all-md --all -r ~/.claude
+npm run export-md -- --dry-run -o ./tmp -p <projectId>
+```
+
+输出布局：`projects/{projectId}/{sessionId}/transcript.md`，子 agent 在 `subagents/agent-*.md`。
+
+统计导出文件 token 数（依赖 tiktoken，首次会建 `scripts/.venv`）：
+
+```shell
+npm run count-tokens
+npm run count-tokens -- --format md
+```
+
+### HTTP API（自建脚本时用）
+
+后端路由前缀 `/api/roots`：
+
+| 方法 | 路径 | 作用 |
+|------|------|------|
+| GET | `/api/roots` | 已注册的 root 列表 |
+| POST | `/api/roots` | `{ "path", "label?" }` 添加 root |
+| DELETE | `/api/roots/:rootId` | 移除 root |
+| GET | `.../projects/:projectId/sessions` | 会话列表 |
+| GET | `.../sessions/:sessionId/messages` | 解析后的消息（`?filter=user,assistant` 可过滤） |
+| POST | `.../sessions/:sessionId/rename` | `{ "title" }` |
+| POST | `.../sessions/:sessionId/rewind` | `{ "targetMessageUuid" }` |
+| POST | `.../sessions/:sessionId/branch` | `{ "targetMessageUuid" }` |
+| POST | `.../sessions/:sessionId/move` | `{ "targetProjectId" }` |
+| DELETE | `.../sessions/:sessionId` | 删会话文件 |
+
+### 常见问题
+
+**端口被占用 / 页面打不开**
+
+用 `cc-session-viewer --restart`，或换 `--port`。
+
+**侧边栏没有项目**
+
+确认本机跑过 Claude Code，且存在 `~/.claude/projects/`。若会话在别的目录，用 `--roots` 或界面添加 root。
+
+**和 Claude Code 内置 `/resume` 的关系**
+
+Viewer 不负责恢复 TUI 会话；它用来**看**和**整理** jsonl。要在 Claude Code 里接着聊，仍用 `claude --resume` 或会话列表；Rewind 之后只有被截断后的 jsonl 会被 resume 读到。
+
+---
+
+## cc-read
+
+**项目**：[yurukusa/cc-read](https://github.com/yurukusa/cc-read) ｜ **npm**：`cc-read` ｜ **编写语言**：单文件 Node（`cli.mjs`，**零 npm 依赖**）
+
+### 定位
+
+Claude Code 会大量调用内置 **Read** 工具读仓库文件。读了多少次、集中在哪些后缀、哪个项目最「费眼」，jsonl 里都有，但没人会手 grep。
+
+**cc-read** 扫描 `~/.claude/projects/**/*.jsonl`，抽出所有 `tool_use` 且 `name === "Read"` 的记录，按**文件名**、**扩展名**、**项目目录名**汇总，在终端打柱状图。属于 [cc-toolkit](https://yurukusa.github.io/cc-toolkit/) 里 60+ 会话分析小工具之一；和 cc-session-viewer 互补——viewer 看**单次对话结构**，cc-read 看**跨会话阅读习惯**。
+
+### 安装与运行
+
+```shell
+npx cc-read
+npx cc-read --json
+```
+
+没有子命令，没有配置文件。Node **≥ 18**。只认 **`~/.claude/projects/`**（源码写死 `join(homedir(), '.claude', 'projects')`），暂不支持 `--roots`；要分析别的机器拷过来的数据，需放到该路径下或改 clone 后的 `cli.mjs`。
+
+扫描范围：
+
+- 各项目目录下 `*.jsonl`
+- 各项目下 `*/subagents/*.jsonl`（子 agent 的 Read 也计入）
+
+### 终端输出读什么
+
+```
+  cc-read — Most-Read Files
+  ════════════════════════════════════════
+
+  ▸ Overview
+    Total Read calls:   …        # Read 工具调用总次数
+    Unique files read:  …        # 按 basename 去重后的文件数
+    Most-read file:     foo.py   # 读次数最多的文件名
+    Top extension:      .py      # 占比最高的后缀
+    Hall of Fame (1k+): N files  # 单文件 Read ≥ 1000 次
+
+  ▸ Most-read files (top 15)     # 柱状条 + ★ 表示 Hall of Fame
+  ▸ By extension                 # 按后缀占比
+  ▸ By project (top 10)          # projectId 目录名，不是 git 仓库友好名
+  ▸ Hall of Fame                 # 列出所有 ≥1000 次的文件
+```
+
+**统计口径要注意：**
+
+1. **只统计 Read**，不含 Grep、Glob、Bash `cat` 等。
+2. 文件键是 **`basename`**（`cli.mjs` 里 `basename(fp)`），不同目录下同名 `index.ts` 会**合并**成一条。
+3. **项目**键来自路径里 `projects/` 下一级目录名，和 cc-session-viewer 侧边栏一致，不是 `package.json` 里的项目名。
+
+### JSON 输出（脚本 / CI）
+
+```shell
+npx cc-read --json
+```
+
+结构（v1.0.0）：
+
+```json
+{
+  "version": "1.0.0",
+  "totalReads": 36973,
+  "uniqueFiles": 4512,
+  "topFile": { "name": "dungeon_game.py", "count": 6723 },
+  "topExtension": { "ext": ".py", "count": 12683 },
+  "byFile": [{ "name": "…", "count": 6723 }],
+  "byExtension": [{ "ext": ".py", "count": 12683 }],
+  "byProject": [{ "project", "count": 1234 }]
+}
+```
+
+`byFile` 最多 20 条；扩展名、项目列表为全量排序结果。适合 `jq` 接报表或和团队共享「哪些文件被 Agent 读烂了该拆模块」。
+
+### 浏览器版（免安装）
+
+[https://yurukusa.github.io/cc-read/](https://yurukusa.github.io/cc-read/) 把 `~/.claude/projects/`（或任意子文件夹）拖进页面即可分析，逻辑与 CLI 相同，数据不上传（纯前端读本地文件夹）。
+
+### 和 cc-session-viewer 怎么配合
+
+| 问题 | 用谁 |
+|------|------|
+| 某次对话里 Claude 具体读了啥、调了啥 tool | cc-session-viewer 展开 checkpoint |
+| 过去一个月哪个 `.py` 被 Read 最多 | cc-read |
+| 对比两次会话的 prompt 效果 | cc-session-viewer Compare |
+| 导出会话给人看 | cc-session-viewer 复制 / export-md |
+| 写脚本拉 Read 统计 | cc-read `--json` |
+
+### 常见问题
+
+**`Could not read ~/.claude/projects/`**
+
+目录不存在或权限不足。先在本机跑过一次 Claude Code。
+
+**数字特别大**
+
+长会话 + 反复改同一文件时，单次任务可能 Read 同一文件几十次，属正常；Hall of Fame（1000+）说明该文件长期是 Agent 的「主战场」，可以考虑拆文件或加 CLAUDE.md 指引减少盲读。
+
+**和 cc-switch 无关**
+
+cc-read 不读 Provider、不读 MCP 配置，只读会话 jsonl。
+
+---
+
+> **资料来源**：[cc-switch CLI GitHub](https://github.com/SaladDay/cc-switch-cli)、[cc-switch CLI README（中文）](https://github.com/SaladDay/cc-switch-cli/blob/main/README_ZH.md)、[cc-session-viewer](https://github.com/ravikanchikare/cc-session-viewer)（2026-06 clone 核对）、[cc-read](https://github.com/yurukusa/cc-read)（2026-06 clone 核对）

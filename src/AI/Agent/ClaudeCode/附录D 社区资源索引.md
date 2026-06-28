@@ -31,12 +31,15 @@ date: 2026-06-26
 | ClaudeFast（插件/工具集） | [claudefa.st](https://claudefa.st/) |
 | Claude Skills Info | [claudeskills.info](https://claudeskills.info/) |
 
-## CC Switch 生态
+## 衍生工具生态
 
 | 资源 | 地址 |
 |------|------|
 | CC Switch Desktop | [github.com/farion1231/cc-switch](https://github.com/farion1231/cc-switch) |
 | cc-switch CLI | [github.com/SaladDay/cc-switch-cli](https://github.com/SaladDay/cc-switch-cli) |
+| cc-session-viewer | [github.com/ravikanchikare/cc-session-viewer](https://github.com/ravikanchikare/cc-session-viewer) |
+| cc-read | [github.com/yurukusa/cc-read](https://github.com/yurukusa/cc-read) |
+| cc-toolkit（含 cc-read 等） | [yurukusa.github.io/cc-toolkit](https://yurukusa.github.io/cc-toolkit/) |
 
 ## 社区文章与案例
 
