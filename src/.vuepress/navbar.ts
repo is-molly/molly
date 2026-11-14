@@ -24,6 +24,12 @@ export default navbar([
         children: [
           { text: "CLI&MCP", icon: "/assets/icon/mcp.svg", link: "/AI/CLI-MCP/" },
         ],
+      },
+      {
+        text: "VideoCreation",
+        children: [
+          { text: "VideoCreation", icon: "/assets/icon/mcp.svg", link: "/AI/VideoCreation/" },
+        ],
       }
     ],
   },
